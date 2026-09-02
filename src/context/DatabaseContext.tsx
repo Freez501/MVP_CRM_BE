@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode, useMemo } from "react"
+import { createContext, useContext, ReactNode, useMemo, useRef, useCallback } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import db from "@/data/cocktails_db.json"
 import { CocktailsDb, Cocktail, SemiProduct } from "@/types/db"
@@ -174,6 +174,52 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     return merged
   }, [customSemiProducts, deletedSemiKeys])
 
+  const lastSavedJsonRef = useRef<string>("")
+
+  // Сохранение на диск через локальный API Vite
+  const saveFullDbToDisk = useCallback(
+    async (override?: {
+      cocktails?: Record<string, Cocktail>
+      semi_products?: Record<string, SemiProduct>
+      prices?: Record<string, number>
+      categories?: Record<string, string>
+      category_names?: Record<string, string>
+      ingredient_info?: Record<string, { display_name?: string; unit?: string }>
+      bottle_volumes?: Record<string, number>
+    }) => {
+      const fullDb: CocktailsDb = {
+        semi_products: override?.semi_products ?? semiProducts,
+        cocktails: override?.cocktails ?? cocktails,
+        categories: override?.categories ?? categories,
+        bottle_volumes: override?.bottle_volumes ?? bottleVolumes,
+        prices: override?.prices ?? prices,
+        ingredient_info: (override?.ingredient_info ?? ingredientInfo) as Record<
+          string,
+          { display_name?: string; unit: string }
+        >,
+        category_names: override?.category_names ?? categoryNames,
+        cocktail_categories: baseDb.cocktail_categories,
+      }
+      const jsonStr = JSON.stringify(fullDb)
+      if (jsonStr === lastSavedJsonRef.current) {
+        return
+      }
+      lastSavedJsonRef.current = jsonStr
+
+      try {
+        await fetch("/api/db", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: jsonStr,
+        })
+      } catch (err) {
+        console.warn("Auto-save to disk unavailable:", err)
+      }
+    },
+    [semiProducts, cocktails, categories, bottleVolumes, prices, ingredientInfo, categoryNames]
+  )
+
+
   const toggleStar = (key: string) => {
     setStarredKeys((prev) => {
       const exists = prev.includes(key)
@@ -199,6 +245,9 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       [cleanKey]: cocktail,
     }))
     setDeletedKeys((prev) => prev.filter((k) => k !== cleanKey))
+    saveFullDbToDisk({
+      cocktails: { ...cocktails, [cleanKey]: cocktail },
+    })
     addActivity({
       type: "note_added",
       description: `Создан новый коктейль «${cocktail.name}»`,
@@ -217,6 +266,9 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       ...prev,
       [key]: updated,
     }))
+    saveFullDbToDisk({
+      cocktails: { ...cocktails, [key]: updated },
+    })
     addActivity({
       type: "note_added",
       description: `Отредактирован коктейль «${updated.name}»`,
@@ -232,6 +284,10 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       return copy
     })
     setDeletedKeys((prev) => (prev.includes(key) ? prev : [...prev, key]))
+    const updatedCocktails = { ...cocktails }
+    delete updatedCocktails[key]
+    saveFullDbToDisk({ cocktails: updatedCocktails })
+
     if (target) {
       addActivity({
         type: "note_added",
@@ -248,6 +304,9 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       [cleanKey]: semiProduct,
     }))
     setDeletedSemiKeys((prev) => prev.filter((k) => k !== cleanKey))
+    saveFullDbToDisk({
+      semi_products: { ...semiProducts, [cleanKey]: semiProduct },
+    })
     addActivity({
       type: "note_added",
       description: `Создан новый полуфабрикат «${semiProduct.name}»`,
@@ -266,6 +325,9 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       ...prev,
       [key]: updated,
     }))
+    saveFullDbToDisk({
+      semi_products: { ...semiProducts, [key]: updated },
+    })
     addActivity({
       type: "note_added",
       description: `Отредактирован полуфабрикат «${updated.name}»`,
@@ -281,6 +343,10 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       return copy
     })
     setDeletedSemiKeys((prev) => (prev.includes(key) ? prev : [...prev, key]))
+    const updatedSemi = { ...semiProducts }
+    delete updatedSemi[key]
+    saveFullDbToDisk({ semi_products: updatedSemi })
+
     if (target) {
       addActivity({
         type: "note_added",
@@ -303,6 +369,20 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       setCustomBottleVolumes((prev) => ({ ...prev, [cleanKey]: data.bottle || 0 }))
     }
     setDeletedIngredientKeys((prev) => prev.filter((k) => k !== cleanKey))
+
+    saveFullDbToDisk({
+      prices: { ...prices, [cleanKey]: data.price },
+      categories: { ...categories, [cleanKey]: data.category },
+      ingredient_info: {
+        ...ingredientInfo,
+        [cleanKey]: { display_name: data.name.trim(), unit: data.unit },
+      },
+      bottle_volumes:
+        data.bottle !== undefined
+          ? { ...bottleVolumes, [cleanKey]: data.bottle || 0 }
+          : bottleVolumes,
+    })
+
     addActivity({
       type: "note_added",
       description: `Добавлен ингредиент «${data.name}» (${data.category})`,
@@ -312,6 +392,22 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
   const updateIngredient = (key: string, updates: Partial<IngredientData>) => {
     const cleanKey = key.trim().toLowerCase()
+    const updatedPrice = updates.price !== undefined ? updates.price : prices[cleanKey]
+    const updatedCategory = updates.category !== undefined ? updates.category : categories[cleanKey]
+    const updatedInfo = {
+      ...ingredientInfo[cleanKey],
+      display_name:
+        updates.name !== undefined
+          ? updates.name.trim()
+          : ingredientInfo[cleanKey]?.display_name || cleanKey,
+      unit:
+        updates.unit !== undefined
+          ? updates.unit
+          : ingredientInfo[cleanKey]?.unit || "л",
+    }
+    const updatedBottle =
+      updates.bottle !== undefined ? updates.bottle : bottleVolumes[cleanKey]
+
     if (updates.price !== undefined) {
       setCustomPrices((prev) => ({ ...prev, [cleanKey]: updates.price! }))
     }
@@ -321,16 +417,29 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     if (updates.name !== undefined || updates.unit !== undefined) {
       setCustomIngredientInfo((prev) => ({
         ...prev,
-        [cleanKey]: {
-          ...prev[cleanKey],
-          display_name: updates.name !== undefined ? updates.name.trim() : prev[cleanKey]?.display_name || cleanKey,
-          unit: updates.unit !== undefined ? updates.unit : prev[cleanKey]?.unit || "л",
-        },
+        [cleanKey]: updatedInfo,
       }))
     }
     if (updates.bottle !== undefined) {
       setCustomBottleVolumes((prev) => ({ ...prev, [cleanKey]: updates.bottle || 0 }))
     }
+
+    saveFullDbToDisk({
+      prices: updatedPrice !== undefined ? { ...prices, [cleanKey]: updatedPrice } : prices,
+      categories:
+        updatedCategory !== undefined
+          ? { ...categories, [cleanKey]: updatedCategory }
+          : categories,
+      ingredient_info: {
+        ...ingredientInfo,
+        [cleanKey]: updatedInfo,
+      },
+      bottle_volumes:
+        updatedBottle !== undefined
+          ? { ...bottleVolumes, [cleanKey]: updatedBottle }
+          : bottleVolumes,
+    })
+
     addActivity({
       type: "note_added",
       description: `Обновлён ингредиент «${updates.name || cleanKey}»`,
@@ -342,6 +451,23 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     const cleanKey = key.trim().toLowerCase()
     const name = ingredientInfo[cleanKey]?.display_name || cleanKey
     setDeletedIngredientKeys((prev) => (prev.includes(cleanKey) ? prev : [...prev, cleanKey]))
+
+    const updatedPrices = { ...prices }
+    delete updatedPrices[cleanKey]
+    const updatedCategories = { ...categories }
+    delete updatedCategories[cleanKey]
+    const updatedInfo = { ...ingredientInfo }
+    delete updatedInfo[cleanKey]
+    const updatedBottles = { ...bottleVolumes }
+    delete updatedBottles[cleanKey]
+
+    saveFullDbToDisk({
+      prices: updatedPrices,
+      categories: updatedCategories,
+      ingredient_info: updatedInfo,
+      bottle_volumes: updatedBottles,
+    })
+
     addActivity({
       type: "note_added",
       description: `Удалён ингредиент «${name}» из базы`,
@@ -354,6 +480,9 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     const cleanKey = key.trim().toLowerCase()
     setCustomCategoryNames((prev) => ({ ...prev, [cleanKey]: displayName.trim() }))
     setDeletedCategoryKeys((prev) => prev.filter((k) => k !== cleanKey))
+    saveFullDbToDisk({
+      category_names: { ...categoryNames, [cleanKey]: displayName.trim() },
+    })
     addActivity({
       type: "note_added",
       description: `Добавлена категория «${displayName}»`,
@@ -365,6 +494,11 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     const cleanKey = key.trim().toLowerCase()
     const name = categoryNames[cleanKey] || cleanKey
     setDeletedCategoryKeys((prev) => (prev.includes(cleanKey) ? prev : [...prev, cleanKey]))
+
+    const updatedNames = { ...categoryNames }
+    delete updatedNames[cleanKey]
+    saveFullDbToDisk({ category_names: updatedNames })
+
     addActivity({
       type: "note_added",
       description: `Удалена категория «${name}»`,
