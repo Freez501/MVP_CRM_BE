@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { SemiProduct } from "@/types/db"
 import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ interface SemiProductAddModalProps {
   onAdd: (key: string, semiProduct: SemiProduct) => void
   availableIngredients: SelectOption[]
   ingredientInfo?: Record<string, { display_name?: string; unit?: string }>
+  initialData?: (Partial<SemiProduct> & { name?: string; output_unit?: string }) | null
 }
 
 export function SemiProductAddModal({
@@ -26,6 +27,7 @@ export function SemiProductAddModal({
   onAdd,
   availableIngredients,
   ingredientInfo = {},
+  initialData = null,
 }: SemiProductAddModalProps) {
   const [name, setName] = useState("")
   const [outputVolume, setOutputVolume] = useState<number | string>(1)
@@ -39,6 +41,67 @@ export function SemiProductAddModal({
     },
   ])
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    if (initialData) {
+      setName(initialData.name || "")
+      setOutputVolume(initialData.output_volume || 1)
+      setOutputUnit(initialData.output_unit || initialData.unit || "л")
+
+      const recItems: RecipeItemState[] = Object.entries(initialData.recipe || {}).map(
+        ([ing, amount], idx) => {
+          const cleanKey = ing.replace(/^\(пф\)\s*/i, "")
+          const info = ingredientInfo[ing] || ingredientInfo[cleanKey] || {}
+          const unit = info.unit || "мл"
+          let displayAmount = amount
+          let displayUnit: "мл" | "л" | "г" | "кг" | "шт" = "мл"
+
+          if (unit === "г" || unit === "кг") {
+            displayAmount = amount < 1 ? Math.round(amount * 1000) : amount
+            displayUnit = "г"
+          } else if (unit === "шт") {
+            displayAmount = amount
+            displayUnit = "шт"
+          } else {
+            displayAmount = amount < 1 ? Math.round(amount * 1000) : amount
+            displayUnit = amount < 1 ? "мл" : "л"
+          }
+
+          return {
+            id: `pf_init_${idx}_${Date.now()}`,
+            ing,
+            amount: displayAmount,
+            unit: displayUnit,
+          }
+        }
+      )
+      setRecipe(
+        recItems.length > 0
+          ? recItems
+          : [
+              {
+                id: "pf_init_1",
+                ing: availableIngredients[0]?.key || "ром белый",
+                amount: 500,
+                unit: "мл",
+              },
+            ]
+      )
+    } else {
+      setName("")
+      setOutputVolume(1)
+      setOutputUnit("л")
+      setRecipe([
+        {
+          id: "pf_init_1",
+          ing: availableIngredients[0]?.key || "ром белый",
+          amount: 500,
+          unit: "мл",
+        },
+      ])
+    }
+  }, [open, initialData])
 
   // ================= DRAG & DROP =================
   const handleDragStart = (e: React.DragEvent, index: number) => {

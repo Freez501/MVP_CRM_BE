@@ -732,15 +732,6 @@
       "glassware": {
         "биг шале": 1
       }
-    },
-    "тупотест": {
-      "name": "Тупотест",
-      "category": "special non alc",
-      "recipe": {
-        "(пф) алое кордиал": 0.05
-      },
-      "decorations": {},
-      "glassware": {}
     }
   },
   "categories": {

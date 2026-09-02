@@ -123,11 +123,13 @@ export default function Calculator() {
   const [activeTab, setActiveTab] = useState<CalcResultTab>("smeta")
   const [copiedReport, setCopiedReport] = useState(false)
   const [copiedTtk, setCopiedTtk] = useState(false)
+  const [copiedMessenger, setCopiedMessenger] = useState(false)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
-  // Название и дата мероприятия
+  // Название, дата мероприятия и коэффициент запаса
   const [eventName, setEventName] = useState("")
   const [eventDate, setEventDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [bufferPercent, setBufferPercent] = useLocalStorage<number>("brilliant-calc-buffer", 0)
 
   const printRef = useRef<HTMLDivElement>(null)
 
@@ -224,6 +226,7 @@ export default function Calculator() {
     const rawTotals: Record<string, number> = {}
     const glasswareTotals: Record<string, number> = {}
     const pfToMake: Record<string, number> = {}
+    const bufferMultiplier = 1 + (bufferPercent || 0) / 100
 
     // ТТК по каждому коктейлю
     interface TtkItem {
@@ -372,20 +375,21 @@ export default function Calculator() {
         items: [...recipeItems, ...iceItems, ...decorationItems, ...glasswareItems],
       })
 
-      // 4. Раскрываем рецепт (с учётом ПФ)
-      const expanded = expandRecipe(cocktail.recipe || {}, item.qty, semiProducts, pfToMake)
+      // 4. Раскрываем рецепт (с учётом ПФ и коэффициента запаса)
+      const effectiveQty = item.qty * bufferMultiplier
+      const expanded = expandRecipe(cocktail.recipe || {}, effectiveQty, semiProducts, pfToMake)
       for (const [ing, amount] of Object.entries(expanded)) {
         rawTotals[ing] = (rawTotals[ing] || 0) + amount
       }
 
-      // 5. Украшения
+      // 5. Украшения (с учётом запаса)
       for (const [dec, amount] of Object.entries(cocktail.decorations || {})) {
-        rawTotals[dec] = (rawTotals[dec] || 0) + amount * item.qty
+        rawTotals[dec] = (rawTotals[dec] || 0) + amount * effectiveQty
       }
 
-      // 6. Посуда
+      // 6. Посуда (с учётом запаса)
       for (const [glass, amount] of Object.entries(cocktail.glassware || {})) {
-        glasswareTotals[glass] = (glasswareTotals[glass] || 0) + amount * item.qty
+        glasswareTotals[glass] = (glasswareTotals[glass] || 0) + amount * effectiveQty
       }
     }
 
@@ -681,8 +685,112 @@ export default function Calculator() {
       categorized,
       grandTotalCost,
       totalPortions: selected.reduce((sum, s) => sum + s.qty, 0),
+      bufferPercent,
     }
-  }, [selected, cocktails, semiProducts, ingredientInfo, categories, prices, bottleVolumes])
+  }, [selected, cocktails, semiProducts, ingredientInfo, categories, prices, bottleVolumes, bufferPercent])
+
+  // ================= ГЕНЕРАЦИЯ ТЕКСТА ДЛЯ TELEGRAM / WHATSAPP =================
+  const formattedMessengerText = useMemo(() => {
+    if (selected.length === 0) return "Нет выбранных коктейлей"
+    const lines: string[] = []
+    lines.push(`📋 *ЗАКУПКА: ${eventName ? eventName.toUpperCase() : "КОКТЕЙЛЬНЫЙ БАР"}*`)
+    if (eventDate) {
+      lines.push(`📅 Дата: ${new Date(eventDate).toLocaleDateString("ru-RU")}`)
+    }
+    lines.push(`🍸 Всего коктейлей: *${calculation.totalPortions} шт.*`)
+    if (bufferPercent > 0) {
+      lines.push(`📦 Запас на мероприятие: *+${bufferPercent}%* (включён в закупку)`)
+    }
+    lines.push("")
+
+    lines.push("🍹 *МЕНЮ КОКТЕЙЛЕЙ:*")
+    selected.forEach((c) => {
+      lines.push(`• ${c.name} — ${c.qty} шт.`)
+    })
+    lines.push("")
+
+    const { categorized } = calculation
+
+    if (categorized.alcohol.length > 0) {
+      lines.push("🍾 *АЛКОГОЛЬ:*")
+      categorized.alcohol.forEach((a) => {
+        lines.push(`• ${a.name} — *${a.bottles} бут.* (${a.amount.toFixed(2)} л)`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.non_alcohol.length > 0) {
+      lines.push("🥤 *БЕЗАЛКОГОЛЬНОЕ И СОКИ:*")
+      categorized.non_alcohol.forEach((na) => {
+        lines.push(`• ${na.name} — *${na.amount.toFixed(2)} л*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.syrups.length > 0 || categorized.puree.length > 0 || categorized.concentrate.length > 0) {
+      lines.push("🍯 *СИРОПЫ, ПЮРЕ И КОНЦЕНТРАТЫ:*")
+      categorized.syrups.forEach((s) => {
+        lines.push(`• ${s.name} — *${s.bottles} бут.* (${s.amount.toFixed(2)} л)`)
+      })
+      categorized.puree.forEach((p) => {
+        lines.push(`• ${p.name} — *${p.amount.toFixed(2)} л*`)
+      })
+      categorized.concentrate.forEach((c) => {
+        lines.push(`• ${c.name} — *${c.amount.toFixed(2)} л*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.dry_gr.length > 0) {
+      lines.push("🧂 *СУХИЕ ИНГРЕДИЕНТЫ:*")
+      categorized.dry_gr.forEach((d) => {
+        lines.push(`• ${d.name} — *${d.displayWeight}*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.ice_cube.length > 0 || categorized.ice_figurine.length > 0) {
+      lines.push("🧊 *ЛЁД:*")
+      categorized.ice_cube.forEach((ic) => {
+        lines.push(`• ${ic.name} — *${ic.amount} кг*`)
+      })
+      categorized.ice_figurine.forEach((ifig) => {
+        lines.push(`• ${ifig.name} — *${ifig.amount} шт.*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.decorations_pcs.length > 0 || categorized.decorations_gr.length > 0) {
+      lines.push("🌿 *УКРАШЕНИЯ И ТРАВЫ:*")
+      categorized.decorations_pcs.forEach((dp) => {
+        lines.push(`• ${dp.name} — *${dp.amount} шт.*`)
+      })
+      categorized.decorations_gr.forEach((dg) => {
+        lines.push(`• ${dg.name} — *${dg.displayWeight}*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.pf_to_make.length > 0) {
+      lines.push("🥣 *ПОЛУФАБРИКАТЫ ДЛЯ ЗАГОТОВКИ:*")
+      categorized.pf_to_make.forEach((pf) => {
+        lines.push(`• ${pf.name} — сварить/сделать *${pf.volume} ${pf.unit}*`)
+      })
+      lines.push("")
+    }
+
+    if (categorized.glassware.length > 0) {
+      lines.push("🍷 *ПОСУДА / БОКАЛЫ:*")
+      categorized.glassware.forEach((g) => {
+        lines.push(`• ${g.name} — *${g.count} шт.*`)
+      })
+      lines.push("")
+    }
+
+    lines.push(`💰 *Итого смета:* ${calculation.grandTotalCost.toLocaleString()} ₽`)
+
+    return lines.join("\n")
+  }, [selected, calculation, eventName, eventDate, bufferPercent])
 
   // ================= ГЕНЕРАЦИЯ ТЕКСТОВЫХ ОТЧЁТОВ =================
   const formattedReportText = useMemo(() => {
@@ -700,7 +808,12 @@ export default function Calculator() {
     lines.push("╔══════════════════════════════════════════════════╗")
     lines.push(`║  🍹 ${eventName ? eventName.toUpperCase() : "ОТЧЁТ ПО ЗАКУПКАМ КОКТЕЙЛЕЙ"}  ║`)
     lines.push("╚══════════════════════════════════════════════════╝\n")
-    lines.push(`📅 Дата мероприятия: ${formattedDate}\n`)
+    lines.push(`📅 Дата мероприятия: ${formattedDate}`)
+    if (bufferPercent > 0) {
+      lines.push(`📦 Запас на мероприятие: +${bufferPercent}%\n`)
+    } else {
+      lines.push("")
+    }
 
     lines.push("📋 ЗАКАЗ:")
     calculation.ttkList.forEach((c) => {
@@ -823,7 +936,13 @@ export default function Calculator() {
     lines.push("═".repeat(50))
 
     return lines.join("\n")
-  }, [selected, calculation, eventName, eventDate])
+  }, [selected, calculation, eventName, eventDate, bufferPercent])
+
+  const handleCopyMessenger = () => {
+    navigator.clipboard.writeText(formattedMessengerText)
+    setCopiedMessenger(true)
+    setTimeout(() => setCopiedMessenger(false), 2500)
+  }
 
   const formattedTtkText = useMemo(() => {
     if (selected.length === 0) return "Нет выбранных коктейлей"
@@ -929,7 +1048,7 @@ export default function Calculator() {
           {calculation.totalPortions > 0 && (
             <div className="text-right">
               <span className="block font-montserrat text-[11px] uppercase tracking-wider text-text-tertiary">
-                Итого закупка:
+                Итого закупка {bufferPercent > 0 ? `(запас +${bufferPercent}%)` : ""}:
               </span>
               <span className="font-montserrat font-bold text-xl sm:text-2xl text-text-primary">
                 {calculation.grandTotalCost.toLocaleString()} ₽
@@ -950,9 +1069,9 @@ export default function Calculator() {
         </div>
       </div>
 
-      {/* Единая карточка информации о мероприятии (Название ~70% + Дата ~30%) */}
-      <div className="bg-bg-card border border-border rounded-xl p-3.5 sm:p-4 shadow-sm flex flex-col md:flex-row items-stretch md:items-center gap-4">
-        {/* Название мероприятия (~70%) */}
+      {/* Единая карточка информации о мероприятии (Название + Дата + Запас %) */}
+      <div className="bg-bg-card border border-border rounded-xl p-3.5 sm:p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+        {/* Название мероприятия */}
         <div className="flex-1 min-w-0 relative">
           <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
             Название мероприятия / Заказчик
@@ -969,8 +1088,8 @@ export default function Calculator() {
           </div>
         </div>
 
-        {/* Дата проведения (~30%) */}
-        <div className="w-full md:w-64 shrink-0">
+        {/* Дата проведения */}
+        <div className="w-full sm:w-52 shrink-0">
           <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
             Дата проведения
           </label>
@@ -982,6 +1101,29 @@ export default function Calculator() {
               onChange={(e) => setEventDate(e.target.value)}
               className="w-full bg-bg-app border border-border-sketch rounded-lg pl-10 pr-3 py-2 font-montserrat text-xs sm:text-sm text-text-primary focus:outline-none focus:border-brand cursor-pointer"
             />
+          </div>
+        </div>
+
+        {/* Коэффициент запаса / пролива */}
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
+            Запас на пролив / форс-мажор
+          </label>
+          <div className="flex items-center gap-1 bg-bg-app border border-border-sketch p-1 rounded-lg">
+            {[0, 5, 10, 15, 20].map((pct) => (
+              <button
+                key={pct}
+                type="button"
+                onClick={() => setBufferPercent(pct)}
+                className={`px-2.5 py-1 rounded text-xs font-montserrat font-semibold transition-all ${
+                  bufferPercent === pct
+                    ? "bg-brand text-white shadow-sm"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary/40"
+                }`}
+              >
+                {pct === 0 ? "0%" : `+${pct}%`}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -1205,9 +1347,28 @@ export default function Calculator() {
               </button>
             </div>
 
-            {/* Кнопки экспорта (PDF, Печать, TXT, Копировать) */}
+            {/* Кнопки экспорта (WhatsApp/Telegram, PDF, Печать, TXT, Копировать) */}
             {selected.length > 0 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopyMessenger}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-montserrat font-medium transition-all shadow-sm active:scale-95"
+                  title="Скопировать список закупки для WhatsApp / Telegram"
+                >
+                  {copiedMessenger ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Скопировано!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>В WhatsApp / Telegram</span>
+                    </>
+                  )}
+                </button>
+
                 <button
                   type="button"
                   onClick={handleDownloadPdf}
@@ -1710,6 +1871,7 @@ export default function Calculator() {
           selectedCount={selected.length}
           eventName={eventName}
           eventDate={eventDate}
+          bufferPercent={bufferPercent}
         />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Cocktail } from "@/types/db"
 import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,7 @@ interface CocktailAddModalProps {
   availableGlassware: SelectOption[]
   availableIce: SelectOption[]
   ingredientInfo?: Record<string, { display_name?: string; unit?: string }>
+  initialData?: (Partial<Cocktail> & { name?: string }) | null
 }
 
 export function CocktailAddModal({
@@ -48,6 +49,7 @@ export function CocktailAddModal({
   availableGlassware,
   availableIce,
   ingredientInfo = {},
+  initialData = null,
 }: CocktailAddModalProps) {
   const [name, setName] = useState("")
   const [category, setCategory] = useState(categories[0] || "классические")
@@ -63,6 +65,103 @@ export function CocktailAddModal({
   const [iceList, setIceList] = useState<IceItemState[]>([])
   const [selectedGlass, setSelectedGlass] = useState<string>("none")
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    if (initialData) {
+      setName(initialData.name || "")
+      setCategory(initialData.category || categories[0] || "классические")
+
+      const recItems: RecipeItemState[] = Object.entries(initialData.recipe || {}).map(
+        ([ing, amount], idx) => {
+          const info = ingredientInfo[ing] || {}
+          const unit = info.unit || "мл"
+          let displayAmount = amount
+          let displayUnit: "мл" | "л" | "г" | "кг" | "шт" = "мл"
+
+          if (unit === "г" || unit === "кг") {
+            displayAmount = amount < 1 ? Math.round(amount * 1000) : amount
+            displayUnit = "г"
+          } else if (unit === "шт") {
+            displayAmount = amount
+            displayUnit = "шт"
+          } else {
+            displayAmount = amount < 1 ? Math.round(amount * 1000) : amount
+            displayUnit = amount < 1 ? "мл" : "л"
+          }
+
+          return {
+            id: `rec_init_${idx}_${Date.now()}`,
+            ing,
+            amount: displayAmount,
+            unit: displayUnit,
+          }
+        }
+      )
+      setRecipe(
+        recItems.length > 0
+          ? recItems
+          : [
+              {
+                id: "rec_init_1",
+                ing: availableIngredients[0]?.key || "джин",
+                amount: 50,
+                unit: "мл",
+              },
+            ]
+      )
+
+      const decItems: DecItemState[] = []
+      const iceItems: IceItemState[] = []
+      Object.entries(initialData.decorations || {}).forEach(([key, amount], idx) => {
+        const k = key.toLowerCase()
+        if (
+          k.includes("лед") ||
+          k.includes("лёд") ||
+          k.includes("кубик") ||
+          k.includes("фрапе") ||
+          k.includes("фраппе") ||
+          k.includes("глыба") ||
+          k.includes("шар") ||
+          k.includes("стик")
+        ) {
+          const isFig = k.includes("шар") || k.includes("стик") || k.includes("фигур")
+          iceItems.push({
+            id: `ice_init_${idx}_${Date.now()}`,
+            key,
+            amount,
+            unit: isFig ? "шт" : "кг",
+          })
+        } else {
+          decItems.push({
+            id: `dec_init_${idx}_${Date.now()}`,
+            key,
+            amount,
+            unit: ingredientInfo[key]?.unit || "шт",
+          })
+        }
+      })
+      setDecorations(decItems)
+      setIceList(iceItems)
+
+      const glassKeys = Object.keys(initialData.glassware || {})
+      setSelectedGlass(glassKeys.length > 0 ? glassKeys[0] : "none")
+    } else {
+      setName("")
+      setCategory(categories[0] || "классические")
+      setRecipe([
+        {
+          id: "rec_init_1",
+          ing: availableIngredients[0]?.key || "джин",
+          amount: 50,
+          unit: "мл",
+        },
+      ])
+      setDecorations([])
+      setIceList([])
+      setSelectedGlass("none")
+    }
+  }, [open, initialData])
 
   // ================= DRAG & DROP =================
   const handleDragStart = (e: React.DragEvent, index: number) => {

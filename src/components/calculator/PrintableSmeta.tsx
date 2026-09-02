@@ -7,10 +7,11 @@ interface PrintableSmetaProps {
   selectedCount: number
   eventName?: string
   eventDate?: string
+  bufferPercent?: number
 }
 
 export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
-  ({ calculation, totalPortions, grandTotalCost, selectedCount, eventName, eventDate }, ref) => {
+  ({ calculation, totalPortions, grandTotalCost, selectedCount, eventName, eventDate, bufferPercent }, ref) => {
     const formattedDate = eventDate
       ? new Date(eventDate).toLocaleDateString("ru-RU", {
           day: "numeric",
@@ -71,7 +72,7 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
           <div style={{ textAlign: "right" }}>
             <p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#111111" }}>{formattedDate}</p>
             <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#555555", fontWeight: "500" }}>
-              {totalPortions} порций · {selectedCount} позиций
+              {totalPortions} порций · {selectedCount} позиций {bufferPercent && bufferPercent > 0 ? `· Запас: +${bufferPercent}%` : ""}
             </p>
           </div>
         </div>
