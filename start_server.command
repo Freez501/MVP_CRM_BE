@@ -1,7 +1,10 @@
-﻿#!/bin/bash
+#!/bin/bash
 cd "$(dirname "$0")"
 
-# Stop old server on port 5173 if running
+# Добавляем стандартные пути для macOS (Apple Silicon M-серии и Intel Homebrew/Node)
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Освобождаем порт 5173, если он занят
 OLD_PID=$(lsof -ti :5173)
 if [ -n "$OLD_PID" ]; then
     kill -9 $OLD_PID 2>/dev/null
@@ -9,20 +12,21 @@ if [ -n "$OLD_PID" ]; then
 fi
 
 echo "========================================="
-echo "  MVP DESIGN Dev Server starting"
+echo "  CocktailCalc Pro Dev Server (macOS)"
 echo "========================================="
 echo ""
 echo "URL: http://localhost:5173"
 echo ""
-echo "Stop: Ctrl + C in this window"
+echo "Остановить: нажмите Ctrl + C"
 echo ""
 
-open "http://localhost:5173"
+# Открываем браузер через 1 секунду после старта
+(sleep 1 && open "http://localhost:5173") &
 
 npm run dev
 
 if [ $? -ne 0 ]; then
     echo ""
-    echo "Error starting server. Press any key..."
+    echo "Ошибка запуска сервера. Нажмите любую клавишу..."
     read -n 1
 fi
