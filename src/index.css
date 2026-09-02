@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Dancing+Script&family=Montserrat:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Tenor+Sans&family=Syne:wght@500;600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -22,43 +22,45 @@
   }
 
   body {
-    @apply bg-bg-app text-text-primary font-montserrat;
+    @apply bg-bg-app text-text-primary;
+    font-family: "Assistant", "Montserrat", sans-serif;
     font-size: 15px;
-    line-height: 1.7;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4 {
-    @apply font-cormorant text-text-primary;
+    @apply text-text-primary;
+    font-family: "Cormorant Garamond", serif;
     line-height: 1.2;
   }
 
   h1 {
     @apply italic;
-    font-size: 36px;
-    font-weight: 400;
+    font-size: 34px;
+    font-weight: 600;
   }
 
   h2 {
     @apply italic;
-    font-size: 28px;
-    font-weight: 400;
+    font-size: 26px;
+    font-weight: 600;
   }
 
   h3 {
     @apply italic;
-    font-size: 22px;
-    font-weight: 500;
+    font-size: 20px;
+    font-weight: 600;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-accent-primary text-text-primary font-montserrat font-semibold uppercase tracking-wider text-[13px] px-6 py-2.5 rounded-md transition-all duration-200 shadow-sm hover:bg-[#e5e570] hover:shadow-md;
+    @apply bg-accent-primary text-text-primary font-tenor font-semibold uppercase tracking-leif text-[12px] px-6 py-2.5 rounded-md transition-all duration-200 shadow-sm hover:bg-[#e5e570] hover:shadow-md;
   }
 
   .btn-secondary {
-    @apply bg-transparent border-[1.5px] border-brand text-brand font-montserrat font-semibold uppercase tracking-wider text-[13px] px-6 py-2.5 rounded-md transition-all duration-200 hover:bg-brand hover:text-text-inverse;
+    @apply bg-transparent border-[1.5px] border-brand text-brand font-tenor font-semibold uppercase tracking-leif text-[12px] px-6 py-2.5 rounded-md transition-all duration-200 hover:bg-brand hover:text-text-inverse;
   }
 
   .card {

@@ -20,26 +20,28 @@ export function TopBar() {
         <button className="lg:hidden text-text-secondary hover:text-text-primary transition-colors">
           <Menu className="w-5 h-5" />
         </button>
-        <h2 className="font-cormorant italic text-[28px] text-text-primary leading-none">{title}</h2>
+        <h2 className="font-cormorant italic text-[26px] text-text-primary leading-none font-semibold">
+          {title}
+        </h2>
       </div>
       <div className="flex-1 max-w-md mx-8 hidden md:block">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
           <input
             type="text"
-            placeholder="Search..."
-            className="w-full bg-bg-card border-2 border-border-sketch rounded pl-11 pr-4 py-2 font-montserrat text-[15px] text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-[#a69c92] focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
+            placeholder="Поиск по CRM..."
+            className="w-full bg-bg-card border border-border-sketch rounded-md pl-11 pr-4 py-2 font-assistant text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-[#a69c92] focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
           />
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <button className="text-text-tertiary hover:text-text-primary transition-colors relative">
-          <Bell className="w-5 h-5" />
+      <div className="flex items-center gap-3">
+        <button className="text-text-tertiary hover:text-text-primary transition-colors relative p-2 rounded-full hover:bg-surface-secondary/20">
+          <Bell className="w-4 h-4" />
         </button>
-        <div className="w-9 h-9 rounded-full bg-text-tertiary flex items-center justify-center text-text-inverse text-sm font-semibold font-montserrat">
+        <div className="w-8 h-8 rounded-full bg-brand text-text-inverse flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
           BE
         </div>
       </div>
-  </header>
+    </header>
   )
 }

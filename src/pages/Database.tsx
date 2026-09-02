@@ -417,9 +417,9 @@ export default function Database() {
         setTab(id)
         setQuery("")
       }}
-      className={`px-5 py-2 rounded-full font-montserrat text-xs uppercase tracking-[0.12em] transition-all border ${
+      className={`px-5 py-2 rounded-full font-tenor text-xs uppercase tracking-leif transition-all border ${
         tab === id
-          ? "bg-accent-primary border-accent-primary text-text-primary shadow-sm font-medium"
+          ? "bg-accent-primary border-accent-primary text-text-primary shadow-sm font-semibold"
           : "bg-bg-card border-border-sketch text-text-secondary hover:border-brand"
       }`}
     >
@@ -462,10 +462,10 @@ export default function Database() {
       {/* Верхняя шапка */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="font-cormorant italic text-[24px] text-text-primary">
+          <h1 className="font-cormorant italic text-[28px] text-text-primary font-semibold">
             База рецептов, посуды и ингредиентов
-          </p>
-          <p className="font-montserrat text-xs text-text-tertiary mt-0.5">
+          </h1>
+          <p className="font-assistant text-xs text-text-tertiary mt-0.5">
             {cocktailsList.length} коктейлей · {semiProductsList.length} полуфабрикатов · {ingredientsList.length} ингредиентов · {glasswareList.length} видов посуды
           </p>
         </div>
@@ -474,7 +474,7 @@ export default function Database() {
           <Button
             variant="primary"
             size="sm"
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1.5 font-tenor uppercase tracking-leif text-xs"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -486,7 +486,7 @@ export default function Database() {
           <Button
             variant="primary"
             size="sm"
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1.5 font-tenor uppercase tracking-leif text-xs"
             onClick={() => setIsAddPfOpen(true)}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -498,7 +498,7 @@ export default function Database() {
           <Button
             variant="primary"
             size="sm"
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1.5 font-tenor uppercase tracking-leif text-xs"
             onClick={() => setIsAddIngredientOpen(true)}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -510,7 +510,7 @@ export default function Database() {
           <Button
             variant="primary"
             size="sm"
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1.5 font-tenor uppercase tracking-leif text-xs"
             onClick={() => setIsAddGlasswareOpen(true)}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -539,7 +539,7 @@ export default function Database() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Поиск по названию или ингредиенту..."
-                  className="w-full bg-bg-app border-2 border-border-sketch rounded pl-10 pr-4 py-1.5 font-montserrat text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+                  className="w-full bg-bg-app border border-border-sketch rounded pl-10 pr-4 py-1.5 font-assistant text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
                 />
               </div>
 
@@ -549,7 +549,7 @@ export default function Database() {
                   <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+                    className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer"
                   >
                     <option value="all">Все категории</option>
                     {cocktailCategories.map((cat) => (
@@ -565,7 +565,7 @@ export default function Database() {
                   <select
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                    className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+                    className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer"
                   >
                     <option value="name_asc">А → Я</option>
                     <option value="name_desc">Я → А</option>
@@ -575,9 +575,9 @@ export default function Database() {
                 <button
                   type="button"
                   onClick={() => setOnlyStarred(!onlyStarred)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded border text-xs font-montserrat uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded border text-[11px] font-tenor uppercase tracking-leif transition-all ${
                     onlyStarred
-                      ? "bg-accent-primary border-accent-primary text-text-primary"
+                      ? "bg-accent-primary border-accent-primary text-text-primary font-semibold"
                       : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
                   }`}
                 >
@@ -588,54 +588,29 @@ export default function Database() {
             </div>
 
             {/* Быстрые чипсы-фильтры */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-border/50">
-              <span className="text-[11px] font-montserrat uppercase tracking-wider text-text-tertiary mr-1">
+            <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-border/60">
+              <span className="text-[11px] font-tenor uppercase tracking-leif text-text-tertiary mr-1">
                 Быстрый фильтр:
               </span>
-              <button
-                type="button"
-                onClick={() => setQuickFilter("all")}
-                className={`px-3 py-1 rounded-full text-xs font-montserrat tracking-wider transition-all border ${
-                  quickFilter === "all"
-                    ? "bg-text-primary text-bg-app border-text-primary font-medium shadow-sm"
-                    : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
-                }`}
-              >
-                Все ({cocktailsList.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuickFilter("alc")}
-                className={`px-3 py-1 rounded-full text-xs font-montserrat tracking-wider transition-all border ${
-                  quickFilter === "alc"
-                    ? "bg-text-primary text-bg-app border-text-primary font-medium shadow-sm"
-                    : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
-                }`}
-              >
-                🍸 Алкогольные ({cocktailsList.filter((c) => !isNonAlc(c)).length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuickFilter("non_alc")}
-                className={`px-3 py-1 rounded-full text-xs font-montserrat tracking-wider transition-all border ${
-                  quickFilter === "non_alc"
-                    ? "bg-text-primary text-bg-app border-text-primary font-medium shadow-sm"
-                    : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
-                }`}
-              >
-                🥤 Безалкогольные ({cocktailsList.filter(isNonAlc).length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuickFilter("with_pf")}
-                className={`px-3 py-1 rounded-full text-xs font-montserrat tracking-wider transition-all border ${
-                  quickFilter === "with_pf"
-                    ? "bg-text-primary text-bg-app border-text-primary font-medium shadow-sm"
-                    : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
-                }`}
-              >
-                🥣 С полуфабрикатами ({cocktailsList.filter(hasSemi).length})
-              </button>
+              {[
+                { id: "all", label: "Все" },
+                { id: "alc", label: "Алкогольные" },
+                { id: "non_alc", label: "Безалкогольные" },
+                { id: "with_pf", label: "С полуфабрикатами" },
+              ].map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setQuickFilter(chip.id as any)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-tenor uppercase tracking-leif transition-all border ${
+                    quickFilter === chip.id
+                      ? "bg-brand text-white border-brand shadow-sm font-semibold"
+                      : "bg-bg-app border-border-sketch text-text-secondary hover:text-text-primary hover:border-brand"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -692,29 +667,29 @@ export default function Database() {
                     </div>
 
                     <div className="pr-14 mb-2">
-                      <h3 className="font-cormorant italic text-xl text-text-primary leading-tight truncate font-semibold">
+                      <h3 className="font-tenor font-bold uppercase tracking-leif text-[13px] sm:text-[14px] text-text-primary leading-snug truncate">
                         {cocktail.name}
                       </h3>
-                      <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-surface-secondary/50 text-text-primary font-montserrat text-[11px] uppercase tracking-wider font-medium">
+                      <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-surface-secondary/40 text-text-primary font-tenor text-[10px] uppercase tracking-leif font-semibold">
                         {cocktail.category}
                       </span>
                     </div>
 
                     <div className="mt-3 pt-2.5 border-t border-border">
-                      <p className="font-montserrat font-medium uppercase tracking-[0.1em] text-xs text-text-secondary mb-2">
+                      <p className="font-tenor font-semibold uppercase tracking-leif text-[10px] text-text-secondary mb-1.5">
                         Состав ({ingredientNames.length}):
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {ingredientNames.slice(0, 4).map((ing) => (
                           <span
                             key={ing}
-                            className="bg-bg-app border border-border-sketch px-2 py-0.5 rounded text-xs font-montserrat font-medium text-text-primary"
+                            className="bg-bg-app border border-border-sketch/70 px-2 py-0.5 rounded text-xs font-assistant font-medium text-text-primary"
                           >
                             {capitalize(ing)}
                           </span>
                         ))}
                         {ingredientNames.length > 4 && (
-                          <span className="text-xs font-montserrat text-text-secondary self-center font-medium pl-0.5">
+                          <span className="text-xs font-assistant text-text-secondary self-center font-medium pl-0.5">
                             +{ingredientNames.length - 4} ещё
                           </span>
                         )}
@@ -722,8 +697,8 @@ export default function Database() {
                     </div>
 
                     {Object.keys(cocktail.decorations || {}).length > 0 && (
-                      <div className="mt-3 text-xs font-montserrat flex items-center gap-1.5 pt-2 border-t border-border/60">
-                        <span className="font-semibold uppercase tracking-wider text-[11px] text-text-secondary shrink-0">
+                      <div className="mt-3 text-xs font-assistant flex items-center gap-1.5 pt-2 border-t border-border/60">
+                        <span className="font-tenor font-semibold uppercase tracking-leif text-[10px] text-text-secondary shrink-0">
                           Украшение:
                         </span>
                         <span className="text-text-primary font-medium truncate">
@@ -750,7 +725,7 @@ export default function Database() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Поиск по названию или составу ПФ..."
-                className="w-full bg-bg-app border-2 border-border-sketch rounded pl-10 pr-4 py-1.5 font-montserrat text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+                className="w-full bg-bg-app border border-border-sketch rounded pl-10 pr-4 py-1.5 font-assistant text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
               />
             </div>
 
@@ -759,7 +734,7 @@ export default function Database() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+                className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer"
               >
                 <option value="name_asc">А → Я</option>
                 <option value="name_desc">Я → А</option>
@@ -770,7 +745,7 @@ export default function Database() {
           {filteredSemi.length === 0 ? (
             <div className="card py-16 text-center">
               <p className="font-cormorant italic text-2xl text-text-primary">Ничего не найдено</p>
-              <p className="font-montserrat text-xs text-text-tertiary mt-2">
+              <p className="font-assistant text-xs text-text-tertiary mt-2">
                 Попробуйте изменить поисковый запрос
               </p>
             </div>
@@ -787,7 +762,7 @@ export default function Database() {
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-accent-primary/60 text-text-primary font-montserrat text-[11px] uppercase tracking-wider font-medium">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-accent-primary/60 text-text-primary font-tenor text-[10px] uppercase tracking-leif font-semibold">
                           Выход: {pf.output_volume} {pf.unit}
                         </span>
                         <button
@@ -803,25 +778,25 @@ export default function Database() {
                         </button>
                       </div>
 
-                      <h3 className="font-cormorant italic text-xl text-text-primary leading-tight truncate font-semibold">
+                      <h3 className="font-tenor font-bold uppercase tracking-leif text-[13px] sm:text-[14px] text-text-primary leading-snug truncate">
                         {pf.name}
                       </h3>
 
                       <div className="mt-3 pt-2.5 border-t border-border">
-                        <p className="font-montserrat font-medium uppercase tracking-[0.1em] text-xs text-text-secondary mb-2">
+                        <p className="font-tenor font-semibold uppercase tracking-leif text-[10px] text-text-secondary mb-1.5">
                           Состав ({ingredientNames.length}):
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {ingredientNames.slice(0, 4).map((ing) => (
                             <span
                               key={ing}
-                              className="bg-bg-app border border-border-sketch px-2 py-0.5 rounded text-xs font-montserrat font-medium text-text-primary"
+                              className="bg-bg-app border border-border-sketch/70 px-2 py-0.5 rounded text-xs font-assistant font-medium text-text-primary"
                             >
                               {capitalize(ing)}
                             </span>
                           ))}
                           {ingredientNames.length > 4 && (
-                            <span className="text-xs font-montserrat text-text-secondary self-center font-medium pl-0.5">
+                            <span className="text-xs font-assistant text-text-secondary self-center font-medium pl-0.5">
                               +{ingredientNames.length - 4} ещё
                             </span>
                           )}
@@ -829,18 +804,18 @@ export default function Database() {
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-border text-xs font-montserrat text-text-secondary">
+                    <div className="mt-3 pt-2.5 border-t border-border text-xs font-assistant text-text-secondary">
                       {semiUsageMap[pf.key]?.length > 0 ? (
                         <div>
-                          <span className="text-text-secondary">
+                          <span className="text-text-secondary text-xs">
                             Используется в <strong className="text-text-primary font-semibold">{semiUsageMap[pf.key].length}</strong> {semiUsageMap[pf.key].length === 1 ? "коктейле" : semiUsageMap[pf.key].length < 5 ? "коктейлях" : "коктейлях"}:
                           </span>
-                          <p className="text-[11px] text-text-tertiary truncate mt-0.5" title={semiUsageMap[pf.key].join(", ")}>
+                          <p className="text-[11px] text-text-tertiary truncate mt-0.5 font-assistant" title={semiUsageMap[pf.key].join(", ")}>
                             {semiUsageMap[pf.key].slice(0, 3).join(", ")}{semiUsageMap[pf.key].length > 3 ? "..." : ""}
                           </p>
                         </div>
                       ) : (
-                        <span className="text-text-tertiary">Не привязан к коктейлям</span>
+                        <span className="text-text-tertiary text-xs">Не привязан к коктейлям</span>
                       )}
                     </div>
                   </div>
@@ -862,7 +837,7 @@ export default function Database() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Поиск ингредиента или категории..."
-                className="w-full bg-bg-app border-2 border-border-sketch rounded pl-10 pr-4 py-1.5 font-montserrat text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+                className="w-full bg-bg-app border border-border-sketch rounded pl-10 pr-4 py-1.5 font-assistant text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
               />
             </div>
 
@@ -872,7 +847,7 @@ export default function Database() {
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                  className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+                  className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer"
                 >
                   <option value="name_asc">А → Я</option>
                   <option value="name_desc">Я → А</option>
@@ -882,7 +857,7 @@ export default function Database() {
               <button
                 type="button"
                 onClick={() => setIsCategoriesModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-border-sketch bg-bg-app hover:border-brand text-xs font-montserrat uppercase tracking-wider text-text-primary transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-border-sketch bg-bg-app hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-primary transition-all"
               >
                 <Tag className="w-3.5 h-3.5 text-brand" />
                 Категории
@@ -896,25 +871,25 @@ export default function Database() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-border bg-bg-card">
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
                       Ингредиент
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
                       Категория
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
                       Использование
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
                       Единица
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
                       Цена, ₽
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary">
-                      Объём бутылки / тары
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary">
+                      Объём тары
                     </th>
-                    <th className="px-6 py-3 font-montserrat font-semibold uppercase tracking-[0.12em] text-xs text-text-primary text-right">
+                    <th className="px-6 py-3 font-tenor font-semibold uppercase tracking-leif text-[11px] text-text-primary text-right">
                       Действия
                     </th>
                   </tr>
@@ -922,7 +897,7 @@ export default function Database() {
                 <tbody>
                   {filteredIngredients.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-text-tertiary font-montserrat text-xs">
+                      <td colSpan={7} className="px-6 py-12 text-center text-text-tertiary font-assistant text-xs">
                         Ингредиенты не найдены
                       </td>
                     </tr>
@@ -945,21 +920,21 @@ export default function Database() {
                             i % 2 === 0 ? "bg-bg-card" : "bg-bg-app"
                           }`}
                         >
-                          <td className="px-6 py-3.5 font-cormorant italic text-lg text-text-primary font-semibold">
+                          <td className="px-6 py-3.5 font-tenor font-bold uppercase tracking-leif text-xs text-text-primary">
                             {capitalize(ing.name)}
                           </td>
                           <td className="px-6 py-3.5">
-                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-surface-secondary/50 text-text-primary font-montserrat text-[11px] uppercase tracking-wider font-medium">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-surface-secondary/40 text-text-primary font-tenor text-[10px] uppercase tracking-leif font-semibold">
                               {categoryNames[ing.category] || ing.category}
                             </span>
                           </td>
                           <td className="px-6 py-3.5">
                             {cCount === 0 && sCount === 0 ? (
-                              <span className="text-text-tertiary text-xs font-montserrat">Не привязан</span>
+                              <span className="text-text-tertiary text-xs font-assistant">Не привязан</span>
                             ) : (
                               <span
                                 title={tooltip}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-secondary/50 text-text-primary font-montserrat text-[11px] font-medium cursor-help hover:bg-surface-secondary"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-secondary/50 text-text-primary font-tenor text-[10px] uppercase tracking-leif font-semibold cursor-help hover:bg-surface-secondary"
                               >
                                 {cCount > 0 && <span>{cCount} кокт.</span>}
                                 {cCount > 0 && sCount > 0 && <span className="text-text-tertiary">·</span>}
@@ -967,13 +942,13 @@ export default function Database() {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-3.5 font-montserrat text-xs font-medium text-text-primary">
+                          <td className="px-6 py-3.5 font-assistant text-xs font-medium text-text-primary">
                             {ing.unit}
                           </td>
-                          <td className="px-6 py-3.5 font-montserrat text-sm font-semibold text-text-primary">
+                          <td className="px-6 py-3.5 font-assistant text-sm font-semibold text-text-primary">
                             {ing.price.toLocaleString()} ₽
                           </td>
-                          <td className="px-6 py-3.5 font-montserrat text-xs text-text-secondary">
+                          <td className="px-6 py-3.5 font-assistant text-xs text-text-secondary">
                             {ing.bottle ? `${ing.bottle} л` : "—"}
                           </td>
                           <td className="px-6 py-3.5 text-right">
@@ -1019,7 +994,7 @@ export default function Database() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Поиск бокала или посуды..."
-                className="w-full bg-bg-app border-2 border-border-sketch rounded pl-10 pr-4 py-1.5 font-montserrat text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+                className="w-full bg-bg-app border border-border-sketch rounded pl-10 pr-4 py-1.5 font-assistant text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
               />
             </div>
 
@@ -1028,7 +1003,7 @@ export default function Database() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+                className="bg-bg-app border border-border-sketch rounded px-3 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer"
               >
                 <option value="name_asc">А → Я</option>
                 <option value="name_desc">Я → А</option>
@@ -1039,7 +1014,7 @@ export default function Database() {
           {filteredGlassware.length === 0 ? (
             <div className="card py-16 text-center">
               <p className="font-cormorant italic text-2xl text-text-primary">Ничего не найдено</p>
-              <p className="font-montserrat text-xs text-text-tertiary mt-2">
+              <p className="font-assistant text-xs text-text-tertiary mt-2">
                 Попробуйте изменить поисковый запрос
               </p>
             </div>
@@ -1056,17 +1031,17 @@ export default function Database() {
                       <div className="w-8 h-8 rounded-full bg-surface-secondary/40 flex items-center justify-center text-brand">
                         <Wine className="w-4 h-4" />
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-surface-secondary/50 text-text-primary font-montserrat text-[11px] uppercase tracking-wider font-medium">
+                      <span className="px-2.5 py-0.5 rounded-full bg-surface-secondary/40 text-text-primary font-tenor text-[10px] uppercase tracking-leif font-semibold">
                         Посуда · шт
                       </span>
                     </div>
 
-                    <h3 className="font-cormorant italic text-xl text-text-primary leading-tight font-semibold mt-1">
+                    <h3 className="font-tenor font-bold uppercase tracking-leif text-[13px] sm:text-[14px] text-text-primary leading-snug mt-2">
                       {glass.name}
                     </h3>
                   </div>
 
-                  <div className="mt-4 pt-2.5 border-t border-border text-xs font-montserrat text-text-secondary">
+                  <div className="mt-4 pt-2.5 border-t border-border text-xs font-assistant text-text-secondary">
                     {glass.usageCount > 0 ? (
                       <span>
                         Используется в <strong className="text-text-primary font-semibold">{glass.usageCount}</strong> {glass.usageCount === 1 ? "коктейле" : glass.usageCount < 5 ? "коктейлях" : "коктейлях"}

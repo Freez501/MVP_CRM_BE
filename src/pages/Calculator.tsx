@@ -1035,11 +1035,11 @@ export default function Calculator() {
         <div>
           <div className="flex items-center gap-2">
             <CalcIcon className="w-5 h-5 text-brand" />
-            <h1 className="font-cormorant italic text-2xl sm:text-3xl text-text-primary">
+            <h1 className="font-cormorant italic text-2xl sm:text-3xl text-text-primary font-semibold">
               Калькулятор и смета закупок
             </h1>
           </div>
-          <p className="font-montserrat text-xs text-text-tertiary mt-1">
+          <p className="font-assistant text-xs text-text-tertiary mt-1">
             Выберите коктейли и укажите количество порций для мгновенного расчёта сметы, ТТК и закупок
           </p>
         </div>
@@ -1047,10 +1047,10 @@ export default function Calculator() {
         <div className="flex items-center gap-4 self-end md:self-center">
           {calculation.totalPortions > 0 && (
             <div className="text-right">
-              <span className="block font-montserrat text-[11px] uppercase tracking-wider text-text-tertiary">
+              <span className="block font-tenor text-[10px] uppercase tracking-leif text-text-tertiary">
                 Итого закупка {bufferPercent > 0 ? `(запас +${bufferPercent}%)` : ""}:
               </span>
-              <span className="font-montserrat font-bold text-xl sm:text-2xl text-text-primary">
+              <span className="font-assistant font-bold text-xl sm:text-2xl text-text-primary">
                 {calculation.grandTotalCost.toLocaleString()} ₽
               </span>
             </div>
@@ -1059,7 +1059,7 @@ export default function Calculator() {
           {selected.length > 0 && (
             <button
               onClick={clearSelected}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border-sketch hover:border-brand text-xs font-montserrat uppercase tracking-wider text-text-secondary hover:text-brand transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border-sketch hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-secondary hover:text-brand transition-all"
               title="Сбросить все выбранные коктейли"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -1073,7 +1073,7 @@ export default function Calculator() {
       <div className="bg-bg-card border border-border rounded-xl p-3.5 sm:p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
         {/* Название мероприятия */}
         <div className="flex-1 min-w-0 relative">
-          <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
+          <label className="block text-[10px] font-bold font-tenor uppercase tracking-leif text-text-tertiary mb-1">
             Название мероприятия / Заказчик
           </label>
           <div className="relative">
@@ -1083,14 +1083,14 @@ export default function Calculator() {
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
               placeholder="Например: Свадьба Анны и Михаила, Корпоратив VK..."
-              className="w-full bg-bg-app border border-border-sketch rounded-lg pl-10 pr-3 py-2 font-montserrat text-xs sm:text-sm text-text-primary placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+              className="w-full bg-bg-app border border-border-sketch rounded-lg pl-10 pr-3 py-2 font-assistant text-xs sm:text-sm text-text-primary placeholder:italic placeholder:font-cormorant placeholder:text-text-tertiary focus:outline-none focus:border-brand"
             />
           </div>
         </div>
 
         {/* Дата проведения */}
         <div className="w-full sm:w-52 shrink-0">
-          <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
+          <label className="block text-[10px] font-bold font-tenor uppercase tracking-leif text-text-tertiary mb-1">
             Дата проведения
           </label>
           <div className="relative">
@@ -1099,14 +1099,14 @@ export default function Calculator() {
               type="date"
               value={eventDate}
               onChange={(e) => setEventDate(e.target.value)}
-              className="w-full bg-bg-app border border-border-sketch rounded-lg pl-10 pr-3 py-2 font-montserrat text-xs sm:text-sm text-text-primary focus:outline-none focus:border-brand cursor-pointer"
+              className="w-full bg-bg-app border border-border-sketch rounded-lg pl-10 pr-3 py-2 font-assistant text-xs sm:text-sm text-text-primary focus:outline-none focus:border-brand cursor-pointer"
             />
           </div>
         </div>
 
         {/* Коэффициент запаса / пролива */}
         <div className="shrink-0">
-          <label className="block text-[10px] font-bold font-montserrat uppercase tracking-wider text-text-tertiary mb-1">
+          <label className="block text-[10px] font-bold font-tenor uppercase tracking-leif text-text-tertiary mb-1">
             Запас на пролив / форс-мажор
           </label>
           <div className="flex items-center gap-1 bg-bg-app border border-border-sketch p-1 rounded-lg">
@@ -1115,7 +1115,7 @@ export default function Calculator() {
                 key={pct}
                 type="button"
                 onClick={() => setBufferPercent(pct)}
-                className={`px-2.5 py-1 rounded text-xs font-montserrat font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded text-xs font-tenor font-semibold uppercase tracking-leif transition-all ${
                   bufferPercent === pct
                     ? "bg-brand text-white shadow-sm"
                     : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary/40"
@@ -1141,7 +1141,7 @@ export default function Calculator() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Поиск коктейля..."
-                className="w-full bg-bg-app border-2 border-border-sketch rounded pl-10 pr-3 py-1.5 font-montserrat text-xs sm:text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
+                className="w-full bg-bg-app border border-border-sketch rounded pl-10 pr-3 py-1.5 font-assistant text-xs sm:text-sm text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-text-tertiary focus:outline-none focus:border-brand"
               />
             </div>
 
@@ -1149,7 +1149,7 @@ export default function Calculator() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="flex-1 bg-bg-app border border-border-sketch rounded px-2.5 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer truncate"
+                className="flex-1 bg-bg-app border border-border-sketch rounded px-2.5 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer truncate"
               >
                 <option value="all">Все категории</option>
                 {cocktailCategories.map((cat) => (
@@ -1162,7 +1162,7 @@ export default function Calculator() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                className="w-24 bg-bg-app border border-border-sketch rounded px-2 py-1.5 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer text-center"
+                className="w-24 bg-bg-app border border-border-sketch rounded px-2 py-1.5 font-tenor text-[11px] uppercase tracking-leif text-text-primary focus:outline-none focus:border-brand cursor-pointer text-center"
               >
                 <option value="name_asc">А → Я</option>
                 <option value="name_desc">Я → А</option>
@@ -1184,29 +1184,29 @@ export default function Calculator() {
 
             {/* Быстрые кнопки пачек (+10, +20, +50 на все выбранные) */}
             {selected.length > 0 && (
-              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs font-montserrat">
-                <span className="text-text-tertiary text-[11px] uppercase tracking-wider">
+              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs font-assistant">
+                <span className="text-text-tertiary text-[10px] font-tenor uppercase tracking-leif">
                   Пакетно к выбранным:
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => addBatchToAllSelected(10)}
-                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[11px] font-semibold transition-colors"
+                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[10px] font-tenor uppercase tracking-leif font-semibold transition-colors"
                   >
                     +10
                   </button>
                   <button
                     type="button"
                     onClick={() => addBatchToAllSelected(20)}
-                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[11px] font-semibold transition-colors"
+                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[10px] font-tenor uppercase tracking-leif font-semibold transition-colors"
                   >
                     +20
                   </button>
                   <button
                     type="button"
                     onClick={() => addBatchToAllSelected(50)}
-                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[11px] font-semibold transition-colors"
+                    className="px-2 py-0.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-text-primary text-[10px] font-tenor uppercase tracking-leif font-semibold transition-colors"
                   >
                     +50
                   </button>
@@ -1220,7 +1220,7 @@ export default function Calculator() {
             {filteredCocktails.length === 0 ? (
               <div className="card py-12 text-center">
                 <p className="font-cormorant italic text-xl text-text-primary">Ничего не найдено</p>
-                <p className="font-montserrat text-xs text-text-tertiary mt-1">
+                <p className="font-assistant text-xs text-text-tertiary mt-1">
                   Измените параметры поиска
                 </p>
               </div>
@@ -1239,10 +1239,10 @@ export default function Calculator() {
                     }`}
                   >
                     <div className="min-w-0 pr-2">
-                      <h4 className="font-cormorant italic text-lg text-text-primary leading-tight font-semibold truncate">
+                      <h4 className="font-tenor font-bold uppercase tracking-leif text-xs sm:text-[13px] text-text-primary leading-snug truncate">
                         {cocktail.name}
                       </h4>
-                      <span className="inline-block mt-0.5 text-[10px] font-montserrat uppercase tracking-wider text-text-secondary">
+                      <span className="inline-block mt-0.5 text-[9px] font-tenor uppercase tracking-leif text-text-secondary font-medium">
                         {cocktail.category}
                       </span>
                     </div>
@@ -1252,7 +1252,7 @@ export default function Calculator() {
                       <button
                         type="button"
                         onClick={() => changeQty(cocktail.key, cocktail.name, 10)}
-                        className="px-1.5 py-0.5 text-[10px] font-montserrat font-semibold text-text-tertiary hover:text-brand hover:bg-surface-secondary/40 rounded transition-colors"
+                        className="px-1.5 py-0.5 text-[10px] font-tenor uppercase tracking-leif font-semibold text-text-tertiary hover:text-brand hover:bg-surface-secondary/40 rounded transition-colors"
                         title="Добавить +10 порций"
                       >
                         +10
@@ -1284,7 +1284,7 @@ export default function Calculator() {
                             parseInt(e.target.value) || 0
                           )
                         }
-                        className="w-12 h-7 bg-bg-app border border-border-sketch rounded font-montserrat text-xs font-semibold text-center text-text-primary focus:outline-none focus:border-brand"
+                        className="w-12 h-7 bg-bg-app border border-border-sketch rounded font-assistant text-xs font-semibold text-center text-text-primary focus:outline-none focus:border-brand"
                       />
 
                       <button
@@ -1310,7 +1310,7 @@ export default function Calculator() {
               <button
                 type="button"
                 onClick={() => setActiveTab("smeta")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-montserrat text-xs uppercase tracking-wider transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-tenor text-xs uppercase tracking-leif transition-all border ${
                   activeTab === "smeta"
                     ? "bg-accent-primary border-accent-primary text-text-primary font-semibold shadow-sm"
                     : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
@@ -1323,7 +1323,7 @@ export default function Calculator() {
               <button
                 type="button"
                 onClick={() => setActiveTab("ttk")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-montserrat text-xs uppercase tracking-wider transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-tenor text-xs uppercase tracking-leif transition-all border ${
                   activeTab === "ttk"
                     ? "bg-accent-primary border-accent-primary text-text-primary font-semibold shadow-sm"
                     : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
@@ -1336,7 +1336,7 @@ export default function Calculator() {
               <button
                 type="button"
                 onClick={() => setActiveTab("report")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-montserrat text-xs uppercase tracking-wider transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-tenor text-xs uppercase tracking-leif transition-all border ${
                   activeTab === "report"
                     ? "bg-accent-primary border-accent-primary text-text-primary font-semibold shadow-sm"
                     : "bg-bg-app border-border-sketch text-text-secondary hover:border-brand"
@@ -1353,12 +1353,12 @@ export default function Calculator() {
                 <button
                   type="button"
                   onClick={handleCopyMessenger}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-montserrat font-medium transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-tenor font-semibold uppercase tracking-leif transition-all shadow-sm active:scale-95"
                   title="Скопировать список закупки для WhatsApp / Telegram"
                 >
                   {copiedMessenger ? (
                     <>
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-3.5 h-3.5 text-white" />
                       <span>Скопировано!</span>
                     </>
                   ) : (
@@ -1373,7 +1373,7 @@ export default function Calculator() {
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isGeneratingPdf}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-accent-primary/70 hover:bg-accent-primary border border-accent-primary text-xs font-montserrat font-medium text-text-primary transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-accent-primary/70 hover:bg-accent-primary border border-accent-primary text-[11px] font-tenor uppercase tracking-leif font-semibold text-text-primary transition-all"
                   title="Скачать отчёт в PDF"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -1383,7 +1383,7 @@ export default function Calculator() {
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-xs font-montserrat text-text-primary transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-primary transition-all"
                   title="Распечатать смету"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -1395,7 +1395,7 @@ export default function Calculator() {
                     <button
                       type="button"
                       onClick={handleCopyReport}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-xs font-montserrat text-text-primary transition-all"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-primary transition-all"
                       title="Скопировать отчёт в буфер"
                     >
                       {copiedReport ? <Check className="w-3.5 h-3.5 text-brand" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1404,7 +1404,7 @@ export default function Calculator() {
                     <button
                       type="button"
                       onClick={handleDownloadTxt}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-xs font-montserrat text-text-primary transition-all"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-primary transition-all"
                       title="Скачать TXT файл"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -1417,7 +1417,7 @@ export default function Calculator() {
                   <button
                     type="button"
                     onClick={handleCopyTtk}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-xs font-montserrat text-text-primary transition-all"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-bg-app border border-border-sketch hover:border-brand text-[11px] font-tenor uppercase tracking-leif text-text-primary transition-all"
                   >
                     {copiedTtk ? <Check className="w-3.5 h-3.5 text-brand" /> : <Copy className="w-3.5 h-3.5" />}
                     {copiedTtk ? "Скопировано!" : "Копировать ТТК"}
@@ -1664,10 +1664,10 @@ export default function Calculator() {
                     {calculation.ttkList.map((cocktail) => (
                       <div key={cocktail.key} className="bg-bg-app border border-border rounded-lg p-4 space-y-3">
                         <div className="flex items-center justify-between pb-2 border-b border-border">
-                          <h4 className="font-cormorant italic text-xl text-text-primary font-semibold">
+                          <h4 className="font-tenor font-bold uppercase tracking-leif text-sm sm:text-base text-text-primary">
                             {cocktail.name}
                           </h4>
-                          <span className="bg-accent-primary/60 text-text-primary font-montserrat text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="bg-accent-primary/60 text-text-primary font-tenor text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-leif">
                             {cocktail.count} порций
                           </span>
                         </div>

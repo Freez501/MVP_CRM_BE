@@ -19,9 +19,17 @@ export default {
         "text-inverse": "#fefdfd",
       },
       fontFamily: {
+        sans: ['"Assistant"', '"Montserrat"', "sans-serif"],
+        assistant: ['"Assistant"', '"Montserrat"', "sans-serif"],
+        tenor: ['"Tenor Sans"', "sans-serif"],
+        syne: ['"Syne"', "sans-serif"],
         cormorant: ['"Cormorant Garamond"', "serif"],
         montserrat: ["Montserrat", "sans-serif"],
         script: ['"Dancing Script"', "cursive"],
+      },
+      letterSpacing: {
+        leif: "0.18em",
+        "leif-wide": "0.26em",
       },
       boxShadow: {
         card: "0 2px 12px rgba(20, 20, 20, 0.04)",
