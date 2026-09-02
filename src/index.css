@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Dancing+Script&family=Montserrat:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-app: #f9ece6;
+    --color-bg-card: #fefdfd;
+    --color-bg-sidebar: #e2ddd8;
+    --color-border: #e2ddd8;
+    --color-border-sketch: #c8c0b6;
+    --color-surface-secondary: #c8c0b6;
+    --color-accent-primary: #ecec80;
+    --color-accent-secondary: #d0ba8e;
+    --color-brand: #521715;
+    --color-text-primary: #141414;
+    --color-text-secondary: #47403a;
+    --color-text-tertiary: #7c6e62;
+    --color-text-inverse: #fefdfd;
+  }
+
+  body {
+    @apply bg-bg-app text-text-primary font-montserrat;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-cormorant text-text-primary;
+    line-height: 1.2;
+  }
+
+  h1 {
+    @apply italic;
+    font-size: 36px;
+    font-weight: 400;
+  }
+
+  h2 {
+    @apply italic;
+    font-size: 28px;
+    font-weight: 400;
+  }
+
+  h3 {
+    @apply italic;
+    font-size: 22px;
+    font-weight: 500;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent-primary text-text-primary font-montserrat font-semibold uppercase tracking-wider text-[13px] px-6 py-2.5 rounded-md transition-all duration-200 shadow-sm hover:bg-[#e5e570] hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-[1.5px] border-brand text-brand font-montserrat font-semibold uppercase tracking-wider text-[13px] px-6 py-2.5 rounded-md transition-all duration-200 hover:bg-brand hover:text-text-inverse;
+  }
+
+  .card {
+    @apply bg-bg-card border border-border rounded-lg p-6 shadow-card transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-lift hover:-translate-y-0.5;
+  }
+
+  .input-sketch {
+    @apply w-full bg-bg-card border-2 border-border-sketch rounded px-4 py-2.5 font-montserrat text-[15px] text-text-primary placeholder:font-cormorant placeholder:italic placeholder:text-[#a69c92] focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  aside,
+  header,
+  nav,
+  button,
+  .no-print,
+  #root > div > div > main > div > div:first-child,
+  #root > div > div > main > div > div:nth-child(2) {
+    display: none !important;
+  }
+  #printable-smeta-container {
+    position: static !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+}
+
