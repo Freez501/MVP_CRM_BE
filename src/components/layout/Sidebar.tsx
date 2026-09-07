@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
+import logoImg from "@/assets/logo.png"
 import {
-  Asterisk,
   LayoutDashboard,
   CalendarDays,
   Users,
@@ -83,16 +83,14 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-bg-sidebar border-r border-border hidden lg:flex flex-col">
-      <div className="px-6 py-6 flex items-center justify-between border-b border-border/70">
-        <div className="flex items-center gap-2">
-          <Asterisk className="w-5 h-5 text-brand" />
-          <span className="font-cormorant italic text-2xl font-bold tracking-leif text-brand leading-none">
-            CRM
-          </span>
-        </div>
-        <span className="text-[10px] font-tenor uppercase tracking-leif-wide text-text-tertiary">
-          PRO
-        </span>
+      <div className="px-4 py-3 flex items-center justify-center border-b border-border/70">
+        <NavLink to="/" className="w-full flex items-center justify-center group" title="Brilliant Event CRM">
+          <img
+            src={logoImg}
+            alt="Brilliant Event"
+            className="w-full h-auto max-h-24 object-contain transition-transform group-hover:scale-[1.02]"
+          />
+        </NavLink>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ to, label, icon: Icon }) => (

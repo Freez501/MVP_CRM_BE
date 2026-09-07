@@ -1,7 +1,8 @@
 import { useState, FormEvent } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
-import { Wine, Lock, Mail, UserCheck, Sparkles, Shield, ArrowRight } from "lucide-react"
+import logoImg from "@/assets/logo.png"
+import { Lock, Mail, UserCheck, Sparkles, Shield, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UserRole } from "@/types"
 
@@ -88,9 +89,11 @@ export default function Login() {
       <div className="w-full max-w-md bg-bg-card/90 border border-border-sketch backdrop-blur-xl rounded-2xl shadow-2xl p-6 sm:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-300">
         {/* Логотип и заголовок */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand/15 border border-brand/30 text-brand mb-3">
-            <Wine className="w-7 h-7" />
-          </div>
+          <img
+            src={logoImg}
+            alt="Brilliant Event"
+            className="h-14 w-auto mx-auto object-contain mb-2"
+          />
           <h1 className="font-cormorant italic text-3xl sm:text-4xl text-text-primary">
             Brilliant Bar CRM
           </h1>
