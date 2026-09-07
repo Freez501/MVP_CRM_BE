@@ -79,14 +79,14 @@ export function CocktailEditModal({
       const parsedDec: DecItemState[] = []
 
       // 1. Парсим recipe (выделяем лёд в отдельный список, жидкости переводим в мл)
-      Object.entries(cocktail.recipe || {}).forEach(([ing, val], idx) => {
+      Object.entries(cocktail.recipe || {}).forEach(([ing, val]) => {
         const isIce =
           ing.includes("лед") || ing.includes("лёд") || availableIce.some((i) => i.key === ing)
 
         if (isIce) {
           const isFigured = ing.includes("шар") || ing.includes("стик") || ing.includes("фигурный")
           parsedIce.push({
-            id: `ice_rec_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             key: ing,
             amount: val,
             unit: isFigured ? "шт" : "кг",
@@ -113,7 +113,7 @@ export function CocktailEditModal({
           }
 
           parsedRecipe.push({
-            id: `rec_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             ing,
             amount: displayAmount,
             unit,
@@ -122,7 +122,7 @@ export function CocktailEditModal({
       })
 
       // 2. Парсим decorations (выделяем лёд, если он там, и определяем правильную единицу украшений)
-      Object.entries(cocktail.decorations || {}).forEach(([decKey, val], idx) => {
+      Object.entries(cocktail.decorations || {}).forEach(([decKey, val]) => {
         const isIce =
           decKey.includes("лед") ||
           decKey.includes("лёд") ||
@@ -133,7 +133,7 @@ export function CocktailEditModal({
             const isFigured =
               decKey.includes("шар") || decKey.includes("стик") || decKey.includes("фигурный")
             parsedIce.push({
-              id: `ice_dec_${idx}_${Date.now()}`,
+              id: crypto.randomUUID(),
               key: decKey,
               amount: val,
               unit: isFigured ? "шт" : "кг",
@@ -143,7 +143,7 @@ export function CocktailEditModal({
           const infoUnit = ingredientInfo[decKey]?.unit
           const defaultUnit = infoUnit || (val >= 5 ? "г" : "шт")
           parsedDec.push({
-            id: `dec_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             key: decKey,
             amount: val,
             unit: defaultUnit,
@@ -225,7 +225,7 @@ export function CocktailEditModal({
     setRecipe((prev) => [
       ...prev,
       {
-        id: `rec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         ing: defaultIng,
         amount: 50,
         unit: "мл",
@@ -267,7 +267,7 @@ export function CocktailEditModal({
     setDecorations((prev) => [
       ...prev,
       {
-        id: `dec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         key: defaultDec,
         amount: dbUnit === "г" ? 15 : 1,
         unit: dbUnit,
@@ -308,7 +308,7 @@ export function CocktailEditModal({
     setIceList((prev) => [
       ...prev,
       {
-        id: `ice_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         key: defaultIce,
         amount: isFigured ? 1 : 0.2,
         unit: isFigured ? "шт" : "кг",

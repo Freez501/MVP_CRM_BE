@@ -9,6 +9,23 @@ const stageLabel: Record<Event["stage"], string> = {
   cancelled: "Отменён",
 }
 
+interface EventDetails {
+  departure?: string
+  setup?: string
+  start?: string
+  end?: string
+  bar?: string
+  barComment?: string
+  shelf?: string
+  shelfComment?: string
+  pyramid?: string
+  pyramidComment?: string
+  decorations?: string[]
+  decorationComment?: string
+  menu?: string
+  cocktails?: { name: string; qty: number }[]
+}
+
 interface EventReportProps {
   event: Event | null
   onClose: () => void
@@ -17,7 +34,7 @@ interface EventReportProps {
 export function EventReport({ event, onClose }: EventReportProps) {
   if (!event) return null
 
-  const details = (event as Event & { details?: Record<string, any> }).details || {}
+  const details = (event as Event & { details?: EventDetails }).details || {}
 
   return createPortal(
     <div className="fixed inset-0 z-[100] bg-bg-card hidden print:block overflow-y-auto p-12">

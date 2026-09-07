@@ -30,7 +30,7 @@ export const CocktailCard = React.memo(function CocktailCard({
         <h4 className="font-tenor font-bold uppercase tracking-leif text-xs sm:text-[13px] text-text-primary leading-snug truncate">
           {cocktail.name}
         </h4>
-        <span className="inline-block mt-0.5 text-[9px] font-tenor uppercase tracking-leif text-text-secondary font-medium">
+        <span className="inline-block mt-0.5 text-xs font-montserrat text-text-secondary font-medium">
           {cocktail.category}
         </span>
       </div>

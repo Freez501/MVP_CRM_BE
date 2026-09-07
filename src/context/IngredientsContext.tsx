@@ -1,10 +1,11 @@
-import { createContext, useContext, ReactNode, useMemo, useCallback } from "react"
+import { createContext, useContext, ReactNode, useMemo, useCallback, useEffect } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import db from "@/data/cocktails_db.json"
 import { CocktailsDb } from "@/types/db"
 import { useActivities } from "./ActivitiesContext"
 import { saveFullDbToDisk } from "./DatabaseSyncService"
 import { CURRENT_USER } from "@/constants"
+import { supabase } from "@/lib/supabase"
 
 const baseDb = db as CocktailsDb
 
@@ -53,6 +54,33 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
   )
 
   const { addActivity } = useActivities()
+
+  // Загрузка ингредиентов из Supabase при старте
+  useEffect(() => {
+    supabase
+      .from("ingredients")
+      .select("*")
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const pricesMap: Record<string, number> = {}
+          const catMap: Record<string, string> = {}
+          const infoMap: Record<string, { display_name?: string; unit?: string }> = {}
+          const bottleMap: Record<string, number> = {}
+
+          for (const row of data) {
+            pricesMap[row.key] = Number(row.price_per_unit || 0)
+            catMap[row.key] = row.category
+            infoMap[row.key] = { display_name: row.name, unit: row.unit }
+            if (row.bottle_volume) bottleMap[row.key] = Number(row.bottle_volume)
+          }
+
+          setCustomPrices((prev) => ({ ...prev, ...pricesMap }))
+          setCustomCategoriesMap((prev) => ({ ...prev, ...catMap }))
+          setCustomIngredientInfo((prev) => ({ ...prev, ...infoMap }))
+          setCustomBottleVolumes((prev) => ({ ...prev, ...bottleMap }))
+        }
+      })
+  }, [setCustomPrices, setCustomCategoriesMap, setCustomIngredientInfo, setCustomBottleVolumes])
 
   // Мёрдж цен и фильтрация удалённых
   const prices = useMemo(() => {
@@ -135,6 +163,22 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
         description: `Добавлен ингредиент «${data.name}» (${data.category})`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("ingredients")
+        .upsert({
+          key: cleanKey,
+          name: data.name.trim(),
+          category: data.category,
+          unit: data.unit,
+          price_per_unit: data.price,
+          bottle_volume: data.bottle ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase ingredient upsert warning:", error.message)
+        })
     },
     [
       prices,
@@ -203,6 +247,22 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
         description: `Обновлён ингредиент «${updates.name || cleanKey}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("ingredients")
+        .upsert({
+          key: cleanKey,
+          name: updatedInfo.display_name || cleanKey,
+          category: updatedCategory,
+          unit: updatedInfo.unit || "мл",
+          price_per_unit: updatedPrice,
+          bottle_volume: updatedBottle ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase ingredient update warning:", error.message)
+        })
     },
     [
       prices,
@@ -244,6 +304,15 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
         description: `Удалён ингредиент «${name}» из базы`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("ingredients")
+        .delete()
+        .eq("key", cleanKey)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase ingredient delete warning:", error.message)
+        })
     },
     [ingredientInfo, prices, categories, bottleVolumes, setDeletedIngredientKeys, addActivity]
   )

@@ -3,9 +3,10 @@ import { ClientCard } from "./ClientCard"
 
 interface ClientGridProps {
   clients: Client[]
+  onSelectClient?: (client: Client) => void
 }
 
-export function ClientGrid({ clients }: ClientGridProps) {
+export function ClientGrid({ clients, onSelectClient }: ClientGridProps) {
   if (clients.length === 0) {
     return (
       <div className="card py-16 text-center">
@@ -17,7 +18,11 @@ export function ClientGrid({ clients }: ClientGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {clients.map((client) => (
-        <ClientCard key={client.id} client={client} />
+        <ClientCard
+          key={client.id}
+          client={client}
+          onClick={() => onSelectClient && onSelectClient(client)}
+        />
       ))}
     </div>
   )

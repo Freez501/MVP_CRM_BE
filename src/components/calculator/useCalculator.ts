@@ -39,18 +39,85 @@ export interface PfToMakeItem {
   items: TtkItem[]
 }
 
+export interface AlcoholIngredient {
+  name: string
+  amount: number
+  bottles: number
+  bottleVol: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface LiquidIngredient {
+  name: string
+  amount: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface SyrupIngredient {
+  name: string
+  amount: number
+  bottles: number
+  bottleVol: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface GramIngredient {
+  name: string
+  grams: number
+  displayWeight: string
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface PieceIngredient {
+  name: string
+  amount: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface IceCubeIngredient {
+  name: string
+  amount: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface IceFigurineIngredient {
+  name: string
+  amount: number
+  unit: string
+  price: number
+  cost: number
+}
+
+export interface GlasswareItem {
+  name: string
+  count: number
+  unit: string
+}
+
 export interface CategorizedIngredients {
-  alcohol: any[]
-  non_alcohol: any[]
-  syrups: any[]
-  puree: any[]
-  concentrate: any[]
-  dry_gr: any[]
-  ice_cube: any[]
-  ice_figurine: any[]
-  decorations_pcs: any[]
-  decorations_gr: any[]
-  glassware: any[]
+  alcohol: AlcoholIngredient[]
+  non_alcohol: LiquidIngredient[]
+  syrups: SyrupIngredient[]
+  puree: LiquidIngredient[]
+  concentrate: LiquidIngredient[]
+  dry_gr: GramIngredient[]
+  ice_cube: IceCubeIngredient[]
+  ice_figurine: IceFigurineIngredient[]
+  decorations_pcs: PieceIngredient[]
+  decorations_gr: GramIngredient[]
+  glassware: GlasswareItem[]
   pf_to_make: PfToMakeItem[]
 }
 

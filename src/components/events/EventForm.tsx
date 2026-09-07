@@ -1,15 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { mockClients } from "@/data/mockData"
-import db from "@/data/cocktails_db.json"
-import { Cocktail } from "@/types/db"
-import { X, Plus, Minus } from "lucide-react"
-
-const database = db as { cocktails: Record<string, Cocktail> }
-
-const COCKTAILS = Object.values(database.cocktails)
-  .map((c) => ({ name: c.name, category: c.category }))
-  .sort((a, b) => a.name.localeCompare(b.name, "ru"))
+import { useClients } from "@/context/ClientsContext"
+import { useCocktails } from "@/context/CocktailsContext"
+import { Event, EventStage, EventDetails } from "@/types"
+import { X, Plus, Minus, Search, ChevronDown, Check, User } from "lucide-react"
 
 const DECORATION_OPTIONS = [
   "Базовые",
@@ -26,7 +20,9 @@ const DECORATION_OPTIONS = [
 interface EventFormProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (event: any) => void
+  onSubmit: (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">, existingId?: string) => void
+  event?: Event | null
+  initialDate?: string
 }
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -65,12 +61,26 @@ const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
   />
 )
 
-export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
+export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: EventFormProps) {
+  const { clients } = useClients()
+  const { cocktails } = useCocktails()
+
+  const [cocktailSearch, setCocktailSearch] = useState("")
+
+  // Client dropdown search state
+  const [isClientOpen, setIsClientOpen] = useState(false)
+  const [clientSearch, setClientSearch] = useState("")
+  const [clientError, setClientError] = useState(false)
+  const clientDropdownRef = useRef<HTMLDivElement>(null)
+  const clientInputRef = useRef<HTMLInputElement>(null)
+
   const [form, setForm] = useState({
     title: "",
     clientId: "",
     date: "",
     address: "",
+    stage: "new" as EventStage,
+    value: 0,
     departure: "",
     setup: "",
     start: "",
@@ -85,14 +95,118 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
     pyramidComment: "",
     decorations: [] as string[],
     decorationComment: "",
-    menu: "us",
-    cocktails: [] as { name: string; qty: number }[],
+    menu: "us" as "us" | "client",
+    cocktails: [] as { name: string; qty: number; key?: string }[],
     comment: "",
   })
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (event) {
+      const details = event.details || {}
+      setForm({
+        title: event.title || "",
+        clientId: event.clientId || "",
+        date: event.date || "",
+        address: event.address || "",
+        stage: event.stage || "new",
+        value: event.value || 0,
+        departure: details.departure || "",
+        setup: details.setup || "",
+        start: details.start || "",
+        end: details.end || "",
+        bartendersCount: event.bartendersCount || 2,
+        clothing: details.clothing || "",
+        bar: details.bar || "white_with_columns",
+        barComment: details.barComment || "",
+        shelf: details.shelf || "black_white",
+        shelfComment: details.shelfComment || "",
+        pyramid: details.pyramid || "",
+        pyramidComment: details.pyramidComment || "",
+        decorations: details.decorations || [],
+        decorationComment: details.decorationComment || "",
+        menu: details.menu || "us",
+        cocktails: details.cocktails || [],
+        comment: event.comment || "",
+      })
+    } else {
+      setForm({
+        title: "",
+        clientId: "",
+        date: initialDate || "",
+        address: "",
+        stage: "new",
+        value: 0,
+        departure: "",
+        setup: "",
+        start: "",
+        end: "",
+        bartendersCount: 2,
+        clothing: "",
+        bar: "white_with_columns",
+        barComment: "",
+        shelf: "black_white",
+        shelfComment: "",
+        pyramid: "",
+        pyramidComment: "",
+        decorations: [],
+        decorationComment: "",
+        menu: "us",
+        cocktails: [],
+        comment: "",
+      })
+    }
+    setCocktailSearch("")
+    setClientSearch("")
+    setIsClientOpen(false)
+    setClientError(false)
+  }, [event, isOpen, initialDate])
 
-  const client = mockClients.find((c) => c.id === form.clientId)
+  // Close client dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (clientDropdownRef.current && !clientDropdownRef.current.contains(e.target as Node)) {
+        setIsClientOpen(false)
+      }
+    }
+    if (isClientOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      setTimeout(() => clientInputRef.current?.focus(), 50)
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isClientOpen])
+
+  const sortedCocktails = useMemo(() => {
+    return Object.entries(cocktails)
+      .map(([key, c]) => ({ key, name: c.name, category: c.category }))
+      .sort((a, b) => a.name.localeCompare(b.name, "ru"))
+  }, [cocktails])
+
+  const filteredCocktails = useMemo(() => {
+    if (!cocktailSearch.trim()) return sortedCocktails
+    const q = cocktailSearch.toLowerCase()
+    return sortedCocktails.filter(
+      (c) => c.name.toLowerCase().includes(q) || (c.category ?? "").toLowerCase().includes(q)
+    )
+  }, [sortedCocktails, cocktailSearch])
+
+  // Filter clients by search
+  const filteredClients = useMemo(() => {
+    if (!clientSearch.trim()) return clients
+    const q = clientSearch.toLowerCase()
+    return clients.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        (c.company ?? "").toLowerCase().includes(q) ||
+        (c.phone ?? "").includes(q) ||
+        (c.email ?? "").toLowerCase().includes(q)
+    )
+  }, [clients, clientSearch])
+
+  const selectedClient = clients.find((c) => c.id === form.clientId)
+
+  if (!isOpen) return null
 
   const toggleDecoration = (value: string) => {
     setForm((prev) => ({
@@ -103,50 +217,86 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
     }))
   }
 
-  const updateCocktailQty = (name: string, delta: number) => {
+  const updateCocktailQty = (name: string, delta: number, key?: string) => {
     setForm((prev) => {
       const existing = prev.cocktails.find((c) => c.name === name)
       if (!existing) {
         if (delta <= 0) return prev
-        return { ...prev, cocktails: [...prev.cocktails, { name, qty: delta }] }
+        return { ...prev, cocktails: [...prev.cocktails, { name, qty: delta, key }] }
       }
       const nextQty = Math.max(0, existing.qty + delta)
-      const cocktails =
+      const newCocktails =
         nextQty === 0
           ? prev.cocktails.filter((c) => c.name !== name)
-          : prev.cocktails.map((c) => (c.name === name ? { ...c, qty: nextQty } : c))
-      return { ...prev, cocktails }
+          : prev.cocktails.map((c) =>
+              c.name === name ? { ...c, qty: nextQty, key: key || c.key } : c
+            )
+      return { ...prev, cocktails: newCocktails }
     })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
-      title: form.title,
-      clientId: form.clientId,
-      clientName: client?.name ?? "",
-      date: form.date,
-      address: form.address,
-      bartendersCount: Number(form.bartendersCount),
-      stage: "new",
-      value: 0,
-      comment: form.comment,
-      details: { ...form },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })
+
+    // Required fields: title, clientId, date
+    if (!form.title.trim()) return
+
+    if (!form.clientId) {
+      setClientError(true)
+      return
+    }
+
+    if (!form.date) return
+
+    const details: EventDetails = {
+      departure: form.departure || undefined,
+      setup: form.setup || undefined,
+      start: form.start || undefined,
+      end: form.end || undefined,
+      clothing: form.clothing || undefined,
+      bar: form.bar || undefined,
+      barComment: form.barComment || undefined,
+      shelf: form.shelf || undefined,
+      shelfComment: form.shelfComment || undefined,
+      pyramid: form.pyramid || undefined,
+      pyramidComment: form.pyramidComment || undefined,
+      decorations: form.decorations.length > 0 ? form.decorations : undefined,
+      decorationComment: form.decorationComment || undefined,
+      menu: form.menu,
+      cocktails: form.cocktails.length > 0 ? form.cocktails : undefined,
+    }
+
+    onSubmit(
+      {
+        title: form.title.trim(),
+        clientId: form.clientId,
+        clientName: selectedClient?.name ?? (event?.clientName || ""),
+        date: form.date,
+        address: form.address.trim(),
+        bartendersCount: Number(form.bartendersCount) || 1,
+        stage: form.stage,
+        value: Number(form.value) || 0,
+        comment: form.comment.trim(),
+        details,
+      },
+      event?.id
+    )
     onClose()
   }
 
+  const isEdit = !!event
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-text-primary/40" onClick={onClose} />
-      <div className="relative bg-bg-card rounded-lg shadow-modal w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="font-cormorant italic text-[28px] text-text-primary">Новое мероприятие</h2>
+      <div className="absolute inset-0 bg-[#141414]/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-bg-card border-2 border-border-sketch rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto z-10 animate-in zoom-in-95 duration-150">
+        <div className="sticky top-0 bg-bg-card border-b border-border px-6 py-4 flex items-center justify-between z-20">
+          <h2 className="font-cormorant italic text-[28px] text-text-primary">
+            {isEdit ? "Редактировать мероприятие" : "Новое мероприятие"}
+          </h2>
           <button
             onClick={onClose}
-            className="text-text-tertiary hover:text-text-primary transition-colors"
+            className="text-text-tertiary hover:text-text-primary transition-colors p-1 rounded-full hover:bg-surface-secondary/30"
           >
             <X className="w-5 h-5" />
           </button>
@@ -156,30 +306,154 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
           <SectionTitle>Основное</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="title">Название мероприятия</Label>
+              <Label htmlFor="title">Название мероприятия *</Label>
               <Input
                 id="title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Например: Свадьба в Усадьбе / Корпоратив Яндекс"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="client">Заказчик</Label>
-              <Select
-                id="client"
-                value={form.clientId}
-                onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                required
+
+            {/* Интерактивный селектор заказчика с поиском */}
+            <div className="relative" ref={clientDropdownRef}>
+              <Label htmlFor="client-select">Заказчик *</Label>
+              <button
+                id="client-select"
+                type="button"
+                onClick={() => {
+                  setIsClientOpen(!isClientOpen)
+                  setClientSearch("")
+                  setClientError(false)
+                }}
+                className={`w-full flex items-center justify-between gap-2 bg-bg-card border-2 rounded px-4 py-2 font-montserrat text-sm text-left transition-all ${
+                  clientError
+                    ? "border-rose-500 focus:border-rose-500"
+                    : "border-border-sketch hover:border-brand/70 focus:border-brand"
+                }`}
               >
-                <option value="">Выберите заказчика</option>
-                {mockClients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.company ? `· ${c.company}` : ""}
-                  </option>
-                ))}
+                <div className="flex items-center gap-2 truncate">
+                  <User className="w-4 h-4 text-text-tertiary shrink-0" />
+                  {selectedClient ? (
+                    <span className="font-medium text-text-primary truncate">
+                      {selectedClient.name}
+                      {selectedClient.company ? (
+                        <span className="text-text-secondary text-xs ml-1.5 font-normal">
+                          ({selectedClient.company})
+                        </span>
+                      ) : null}
+                    </span>
+                  ) : (
+                    <span className="text-text-tertiary">Выберите заказчика *</span>
+                  )}
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-text-tertiary shrink-0 transition-transform duration-200 ${
+                    isClientOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {clientError && (
+                <p className="text-[11px] text-rose-400 font-montserrat mt-1">
+                  Пожалуйста, выберите заказчика из базы
+                </p>
+              )}
+
+              {/* Выпадающий список заказчиков */}
+              {isClientOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-bg-card border-2 border-border-sketch rounded-lg shadow-2xl z-30 p-2 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="relative mb-2">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+                    <input
+                      ref={clientInputRef}
+                      type="text"
+                      value={clientSearch}
+                      onChange={(e) => setClientSearch(e.target.value)}
+                      placeholder="Поиск по имени, компании, телефону..."
+                      className="w-full bg-bg-app border border-border-sketch rounded pl-8 pr-2 py-1.5 font-montserrat text-xs text-text-primary focus:outline-none focus:border-brand"
+                    />
+                  </div>
+
+                  <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
+                    {filteredClients.length === 0 ? (
+                      <p className="text-xs font-montserrat text-text-tertiary py-3 text-center">
+                        Заказчик не найден
+                      </p>
+                    ) : (
+                      filteredClients.map((c) => {
+                        const isSelected = c.id === form.clientId
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setForm({ ...form, clientId: c.id })
+                              setIsClientOpen(false)
+                              setClientSearch("")
+                              setClientError(false)
+                            }}
+                            className={`w-full flex items-center justify-between p-2 rounded text-left font-montserrat text-xs transition-colors ${
+                              isSelected
+                                ? "bg-accent-primary text-text-primary font-semibold"
+                                : "hover:bg-surface-secondary/40 text-text-secondary hover:text-text-primary"
+                            }`}
+                          >
+                            <div className="truncate">
+                              <div className="font-medium text-text-primary truncate">{c.name}</div>
+                              {(c.company || c.phone) && (
+                                <div className="text-[11px] text-text-tertiary truncate">
+                                  {c.company} {c.company && c.phone ? "·" : ""} {c.phone}
+                                </div>
+                              )}
+                            </div>
+                            {isSelected && (
+                              <Check className="w-4 h-4 text-text-primary shrink-0 ml-2" />
+                            )}
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="stage">Статус (этап воронки)</Label>
+              <Select
+                id="stage"
+                value={form.stage}
+                onChange={(e) => setForm({ ...form, stage: e.target.value as EventStage })}
+              >
+                <option value="new">Новое</option>
+                <option value="in_progress">В работе</option>
+                <option value="confirmed">Подтверждён</option>
+                <option value="done">Проведён</option>
+                <option value="cancelled">Отменён</option>
               </Select>
             </div>
+
+            {/* Поле бюджета с возможностью очистки Backspace без застревания 0 */}
+            <div>
+              <Label htmlFor="value">Бюджет мероприятия, ₽</Label>
+              <Input
+                id="value"
+                type="number"
+                min={0}
+                step={1000}
+                value={form.value === 0 ? "" : form.value}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    value: e.target.value === "" ? 0 : Number(e.target.value),
+                  })
+                }
+                placeholder="0"
+              />
+            </div>
+
             <div>
               <Label htmlFor="bartenders">Количество барменов</Label>
               <Input
@@ -190,8 +464,9 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
                 onChange={(e) => setForm({ ...form, bartendersCount: Number(e.target.value) })}
               />
             </div>
+
             <div>
-              <Label htmlFor="date">Дата</Label>
+              <Label htmlFor="date">Дата мероприятия *</Label>
               <Input
                 id="date"
                 type="date"
@@ -200,40 +475,45 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="address">Адрес площадки</Label>
-              <Input
-                id="address"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-              />
-            </div>
+
             <div>
               <Label htmlFor="clothing">Форма одежды</Label>
               <Input
                 id="clothing"
                 value={form.clothing}
                 onChange={(e) => setForm({ ...form, clothing: e.target.value })}
-                placeholder="Например, черная рубашка"
+                placeholder="Например: классика, черный фартук"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="address">Адрес площадки</Label>
+              <Input
+                id="address"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="г. Москва, ул. Примерная, 10"
               />
             </div>
           </div>
 
           <SectionTitle>Тайминг</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { key: "departure", label: "Выезд со склада" },
-              { key: "setup", label: "Монтаж" },
-              { key: "start", label: "Начало" },
-              { key: "end", label: "Финал" },
-            ].map(({ key, label }) => (
+            {(
+              [
+                { key: "departure", label: "Выезд со склада" },
+                { key: "setup", label: "Монтаж" },
+                { key: "start", label: "Начало" },
+                { key: "end", label: "Финал" },
+              ] as const
+            ).map(({ key, label }) => (
               <div key={key}>
                 <Label htmlFor={key}>{label}</Label>
                 <Input
                   id={key}
                   type="time"
-                  value={(form as any)[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value } as any)}
+                  value={form[key]}
+                  onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
               </div>
             ))}
@@ -243,7 +523,7 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="bar">Бар</Label>
+                <Label htmlFor="bar">Барная стойка</Label>
                 <Select
                   id="bar"
                   value={form.bar}
@@ -288,16 +568,16 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="pyramid">Пирамида</Label>
+                <Label htmlFor="pyramid">Пирамида бокалов</Label>
                 <Select
                   id="pyramid"
                   value={form.pyramid}
                   onChange={(e) => setForm({ ...form, pyramid: e.target.value })}
                 >
                   <option value="">Нет</option>
-                  <option value="56">56</option>
-                  <option value="84">84</option>
-                  <option value="120">120</option>
+                  <option value="56">56 бокалов</option>
+                  <option value="84">84 бокала</option>
+                  <option value="120">120 бокалов</option>
                 </Select>
               </div>
               <div>
@@ -318,7 +598,7 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
                 key={option}
                 className={`cursor-pointer select-none px-4 py-2 rounded-full border font-montserrat text-sm transition-all ${
                   form.decorations.includes(option)
-                    ? "bg-accent-primary border-accent-primary text-text-primary"
+                    ? "bg-accent-primary border-accent-primary text-text-primary font-medium shadow-sm"
                     : "bg-bg-card border-border-sketch text-text-secondary hover:border-brand"
                 }`}
               >
@@ -348,46 +628,69 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
               <Select
                 id="menu"
                 value={form.menu}
-                onChange={(e) => setForm({ ...form, menu: e.target.value })}
+                onChange={(e) => setForm({ ...form, menu: e.target.value as "us" | "client" })}
               >
-                <option value="us">С нас</option>
+                <option value="us">С нас (наша полиграфия)</option>
                 <option value="client">С заказчика</option>
               </Select>
             </div>
           </div>
 
-          <SectionTitle>Коктейли</SectionTitle>
-          <div className="space-y-2">
-            {COCKTAILS.map((cocktail) => {
+          <div className="flex items-center justify-between mt-8 mb-4 border-b border-border pb-2">
+            <h3 className="font-cormorant italic text-xl text-text-primary">
+              Коктейльная карта ({form.cocktails.reduce((sum, c) => sum + c.qty, 0)} порций)
+            </h3>
+            <div className="relative w-48">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+              <input
+                type="text"
+                value={cocktailSearch}
+                onChange={(e) => setCocktailSearch(e.target.value)}
+                placeholder="Поиск коктейля..."
+                className="w-full bg-bg-app border border-border rounded pl-8 pr-2 py-1 text-xs font-montserrat text-text-primary focus:outline-none focus:border-brand"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            {filteredCocktails.map((cocktail) => {
               const selected = form.cocktails.find((c) => c.name === cocktail.name)
               return (
                 <div
-                  key={cocktail.name}
-                  className="flex items-center justify-between bg-bg-app border border-border rounded-lg px-4 py-3"
+                  key={cocktail.key}
+                  className={`flex items-center justify-between border rounded-lg px-4 py-2.5 transition-colors ${
+                    selected && selected.qty > 0
+                      ? "bg-surface-secondary/40 border-brand/50"
+                      : "bg-bg-app border-border"
+                  }`}
                 >
                   <div>
-                    <p className="font-cormorant text-base text-text-primary">{cocktail.name}</p>
-                    <p className="font-montserrat text-xs text-text-tertiary">
-                      {cocktail.category}
+                    <p className="font-cormorant text-base text-text-primary font-medium">
+                      {cocktail.name}
                     </p>
+                    {cocktail.category && (
+                      <p className="font-montserrat text-[11px] text-text-tertiary">
+                        {cocktail.category}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => updateCocktailQty(cocktail.name, -1)}
-                      className="w-8 h-8 rounded-full border border-border-sketch flex items-center justify-center text-text-secondary hover:border-brand hover:text-text-primary transition-colors"
+                      onClick={() => updateCocktailQty(cocktail.name, -1, cocktail.key)}
+                      className="w-7 h-7 rounded-full border border-border-sketch flex items-center justify-center text-text-secondary hover:border-brand hover:text-text-primary transition-colors"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-6 text-center font-montserrat text-text-primary">
+                    <span className="w-8 text-center font-montserrat font-bold text-sm text-text-primary">
                       {selected ? selected.qty : 0}
                     </span>
                     <button
                       type="button"
-                      onClick={() => updateCocktailQty(cocktail.name, 1)}
-                      className="w-8 h-8 rounded-full border border-border-sketch flex items-center justify-center text-text-secondary hover:border-brand hover:text-text-primary transition-colors"
+                      onClick={() => updateCocktailQty(cocktail.name, 1, cocktail.key)}
+                      className="w-7 h-7 rounded-full border border-border-sketch flex items-center justify-center text-text-secondary hover:border-brand hover:text-text-primary transition-colors"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -397,18 +700,18 @@ export function EventForm({ isOpen, onClose, onSubmit }: EventFormProps) {
 
           <SectionTitle>Комментарий</SectionTitle>
           <TextArea
-            rows={4}
+            rows={3}
             value={form.comment}
             onChange={(e) => setForm({ ...form, comment: e.target.value })}
-            placeholder="Особые пожелания заказчика"
+            placeholder="Особые пожелания заказчика, логистика, нюансы площадки..."
           />
 
-          <div className="sticky bottom-0 bg-bg-card border-t border-border pt-4 mt-8 flex justify-end gap-3">
+          <div className="sticky bottom-0 bg-bg-card border-t border-border pt-4 mt-8 flex justify-end gap-3 z-20">
             <Button variant="secondary" type="button" onClick={onClose}>
               Отмена
             </Button>
             <Button variant="primary" type="submit">
-              Сохранить
+              {isEdit ? "Сохранить изменения" : "Создать мероприятие"}
             </Button>
           </div>
         </form>

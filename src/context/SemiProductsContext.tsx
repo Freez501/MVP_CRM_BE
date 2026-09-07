@@ -1,10 +1,19 @@
-import { createContext, useContext, ReactNode, useMemo, useCallback } from "react"
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+} from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import db from "@/data/cocktails_db.json"
-import { CocktailsDb, SemiProduct } from "@/types/db"
+import { CocktailsDb, SemiProduct, Recipe } from "@/types/db"
 import { useActivities } from "./ActivitiesContext"
 import { saveFullDbToDisk } from "./DatabaseSyncService"
 import { CURRENT_USER } from "@/constants"
+import { supabase } from "@/lib/supabase"
 
 const baseDb = db as CocktailsDb
 
@@ -17,6 +26,14 @@ interface SemiProductsContextType {
 
 const SemiProductsContext = createContext<SemiProductsContextType | undefined>(undefined)
 
+interface DbSemiProductRow {
+  key: string
+  name: string
+  output_volume: number
+  unit: string
+  recipe?: Recipe | null
+}
+
 export function SemiProductsProvider({ children }: { children: ReactNode }) {
   const [customSemiProducts, setCustomSemiProducts] = useLocalStorage<Record<string, SemiProduct>>(
     "brilliant-custom-semi-products",
@@ -26,16 +43,71 @@ export function SemiProductsProvider({ children }: { children: ReactNode }) {
     "brilliant-deleted-semi-products",
     []
   )
+  const [cloudSemiProducts, setCloudSemiProducts] = useState<Record<string, SemiProduct>>({})
 
   const { addActivity } = useActivities()
 
+  // Load from Supabase on mount
+  useEffect(() => {
+    supabase
+      .from("semi_products")
+      .select("*")
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const map: Record<string, SemiProduct> = {}
+          for (const row of data as DbSemiProductRow[]) {
+            map[row.key] = {
+              name: row.name,
+              output_volume: Number(row.output_volume || 0),
+              unit: row.unit || "мл",
+              recipe: row.recipe || {},
+            }
+          }
+          setCloudSemiProducts(map)
+        }
+      })
+
+    const channel = supabase
+      .channel("realtime-semi-products")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "semi_products" },
+        (payload) => {
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const row = payload.new as DbSemiProductRow
+            setCloudSemiProducts((prev) => ({
+              ...prev,
+              [row.key]: {
+                name: row.name,
+                output_volume: Number(row.output_volume || 0),
+                unit: row.unit || "мл",
+                recipe: row.recipe || {},
+              },
+            }))
+          } else if (payload.eventType === "DELETE") {
+            const row = payload.old as { key: string }
+            setCloudSemiProducts((prev) => {
+              const copy = { ...prev }
+              delete copy[row.key]
+              return copy
+            })
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
   const semiProducts = useMemo(() => {
-    const merged = { ...baseDb.semi_products, ...customSemiProducts }
+    const merged = { ...baseDb.semi_products, ...cloudSemiProducts, ...customSemiProducts }
     deletedSemiKeys.forEach((key) => {
       delete merged[key]
     })
     return merged
-  }, [customSemiProducts, deletedSemiKeys])
+  }, [cloudSemiProducts, customSemiProducts, deletedSemiKeys])
 
   const addSemiProduct = useCallback(
     (key: string, semiProduct: SemiProduct) => {
@@ -53,6 +125,21 @@ export function SemiProductsProvider({ children }: { children: ReactNode }) {
         description: `Создан новый полуфабрикат «${semiProduct.name}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("semi_products")
+        .upsert({
+          key: cleanKey,
+          name: semiProduct.name,
+          output_volume: semiProduct.output_volume,
+          unit: semiProduct.unit,
+          recipe: semiProduct.recipe || {},
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase semi_product upsert warning:", error.message)
+        })
     },
     [semiProducts, setCustomSemiProducts, setDeletedSemiKeys, addActivity]
   )
@@ -77,6 +164,21 @@ export function SemiProductsProvider({ children }: { children: ReactNode }) {
         description: `Отредактирован полуфабрикат «${updated.name}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("semi_products")
+        .upsert({
+          key,
+          name: updated.name,
+          output_volume: updated.output_volume,
+          unit: updated.unit,
+          recipe: updated.recipe || {},
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase semi_product update warning:", error.message)
+        })
     },
     [semiProducts, setCustomSemiProducts, addActivity]
   )
@@ -101,6 +203,15 @@ export function SemiProductsProvider({ children }: { children: ReactNode }) {
           user: CURRENT_USER,
         })
       }
+
+      // Sync to Supabase
+      supabase
+        .from("semi_products")
+        .delete()
+        .eq("key", key)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase semi_product delete warning:", error.message)
+        })
     },
     [semiProducts, setCustomSemiProducts, setDeletedSemiKeys, addActivity]
   )

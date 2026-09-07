@@ -1,10 +1,19 @@
-import { createContext, useContext, ReactNode, useMemo, useCallback } from "react"
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+} from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import db from "@/data/cocktails_db.json"
-import { CocktailsDb, Cocktail } from "@/types/db"
+import { CocktailsDb, Cocktail, Recipe } from "@/types/db"
 import { useActivities } from "./ActivitiesContext"
 import { saveFullDbToDisk } from "./DatabaseSyncService"
 import { CURRENT_USER } from "@/constants"
+import { supabase } from "@/lib/supabase"
 
 const baseDb = db as CocktailsDb
 
@@ -21,6 +30,16 @@ interface CocktailsContextType {
 
 const CocktailsContext = createContext<CocktailsContextType | undefined>(undefined)
 
+interface DbCocktailRow {
+  key: string
+  name: string
+  category: string
+  recipe?: Recipe | null
+  decorations?: Recipe | null
+  glassware?: Recipe | null
+  is_starred?: boolean
+}
+
 export function CocktailsProvider({ children }: { children: ReactNode }) {
   const [customCocktails, setCustomCocktails] = useLocalStorage<Record<string, Cocktail>>(
     "brilliant-custom-cocktails",
@@ -28,16 +47,78 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
   )
   const [deletedKeys, setDeletedKeys] = useLocalStorage<string[]>("brilliant-deleted-cocktails", [])
   const [starredKeys, setStarredKeys] = useLocalStorage<string[]>("brilliant-starred-cocktails", [])
+  const [cloudCocktails, setCloudCocktails] = useState<Record<string, Cocktail>>({})
 
   const { addActivity } = useActivities()
 
+  // Load from Supabase on mount
+  useEffect(() => {
+    supabase
+      .from("cocktails")
+      .select("*")
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const map: Record<string, Cocktail> = {}
+          const starred: string[] = []
+          for (const row of data as DbCocktailRow[]) {
+            map[row.key] = {
+              name: row.name,
+              category: row.category,
+              recipe: row.recipe || {},
+              decorations: row.decorations || {},
+              glassware: row.glassware || {},
+            }
+            if (row.is_starred) starred.push(row.key)
+          }
+          setCloudCocktails(map)
+          if (starred.length > 0) {
+            setStarredKeys((prev) => Array.from(new Set([...prev, ...starred])))
+          }
+        }
+      })
+
+    // Realtime channel
+    const channel = supabase
+      .channel("realtime-cocktails")
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocktails" }, (payload) => {
+        if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          const row = payload.new as DbCocktailRow
+          setCloudCocktails((prev) => ({
+            ...prev,
+            [row.key]: {
+              name: row.name,
+              category: row.category,
+              recipe: row.recipe || {},
+              decorations: row.decorations || {},
+              glassware: row.glassware || {},
+            },
+          }))
+          if (row.is_starred) {
+            setStarredKeys((prev) => (prev.includes(row.key) ? prev : [...prev, row.key]))
+          }
+        } else if (payload.eventType === "DELETE") {
+          const row = payload.old as { key: string }
+          setCloudCocktails((prev) => {
+            const copy = { ...prev }
+            delete copy[row.key]
+            return copy
+          })
+        }
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [setStarredKeys])
+
   const cocktails = useMemo(() => {
-    const merged = { ...baseDb.cocktails, ...customCocktails }
+    const merged = { ...baseDb.cocktails, ...cloudCocktails, ...customCocktails }
     deletedKeys.forEach((key) => {
       delete merged[key]
     })
     return merged
-  }, [customCocktails, deletedKeys])
+  }, [cloudCocktails, customCocktails, deletedKeys])
 
   const toggleStar = useCallback(
     (key: string) => {
@@ -52,6 +133,14 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
             user: CURRENT_USER,
           })
         }
+
+        // Sync star state to Supabase
+        supabase
+          .from("cocktails")
+          .update({ is_starred: !exists })
+          .eq("key", key)
+          .then(() => {})
+
         return next
       })
     },
@@ -76,8 +165,25 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
         description: `Создан новый коктейль «${cocktail.name}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("cocktails")
+        .upsert({
+          key: cleanKey,
+          name: cocktail.name,
+          category: cocktail.category,
+          recipe: cocktail.recipe || {},
+          decorations: cocktail.decorations || {},
+          glassware: cocktail.glassware || {},
+          is_starred: starredKeys.includes(cleanKey),
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase cocktail upsert warning:", error.message)
+        })
     },
-    [cocktails, setCustomCocktails, setDeletedKeys, addActivity]
+    [cocktails, starredKeys, setCustomCocktails, setDeletedKeys, addActivity]
   )
 
   const updateCocktail = useCallback(
@@ -100,8 +206,25 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
         description: `Отредактирован коктейль «${updated.name}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("cocktails")
+        .upsert({
+          key,
+          name: updated.name,
+          category: updated.category,
+          recipe: updated.recipe || {},
+          decorations: updated.decorations || {},
+          glassware: updated.glassware || {},
+          is_starred: starredKeys.includes(key),
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase cocktail update warning:", error.message)
+        })
     },
-    [cocktails, setCustomCocktails, addActivity]
+    [cocktails, starredKeys, setCustomCocktails, addActivity]
   )
 
   const removeCocktail = useCallback(
@@ -124,6 +247,15 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
           user: CURRENT_USER,
         })
       }
+
+      // Sync to Supabase
+      supabase
+        .from("cocktails")
+        .delete()
+        .eq("key", key)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase cocktail delete warning:", error.message)
+        })
     },
     [cocktails, setCustomCocktails, setDeletedKeys, addActivity]
   )

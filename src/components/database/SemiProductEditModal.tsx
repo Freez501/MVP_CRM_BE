@@ -48,7 +48,7 @@ export function SemiProductEditModal({
       setOutputUnit(semiProduct.unit || "л")
 
       const parsedRecipe: RecipeItemState[] = Object.entries(semiProduct.recipe || {}).map(
-        ([ing, val], idx) => {
+        ([ing, val]) => {
           let unit: "мл" | "л" | "г" | "кг" | "шт" = "мл"
           let displayAmount = val
           const cleanKey = ing.replace(/^\(пф\)\s*/i, "")
@@ -71,7 +71,7 @@ export function SemiProductEditModal({
           }
 
           return {
-            id: `pf_rec_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             ing,
             amount: displayAmount,
             unit,
@@ -151,7 +151,7 @@ export function SemiProductEditModal({
     setRecipe((prev) => [
       ...prev,
       {
-        id: `rec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         ing: defaultIng,
         amount: 500,
         unit: "мл",

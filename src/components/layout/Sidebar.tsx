@@ -7,7 +7,9 @@ import {
   Calculator,
   Database,
   Settings,
+  LogOut,
 } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 const navItems = [
   { to: "/", label: "Дашборд", icon: LayoutDashboard },
@@ -19,6 +21,11 @@ const navItems = [
 ]
 
 export function Sidebar() {
+  const { user, profile, role, signOut } = useAuth()
+  const displayEmail = user?.email || "user@brilliant-bar.ru"
+  const roleName =
+    role === "admin" ? "Администратор" : role === "partner" ? "Партнёр" : "Заготовщик"
+
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-bg-sidebar border-r border-border hidden lg:flex flex-col">
       <div className="px-6 py-6 flex items-center justify-between border-b border-border/70">
@@ -50,18 +57,28 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <div className="px-6 py-5 border-t border-border flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-brand text-text-inverse flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
-          BE
+      <div className="px-4 py-3.5 border-t border-border flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className="w-8 h-8 shrink-0 rounded-full bg-brand text-bg-app flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
+            {role.slice(0, 2).toUpperCase()}
+          </div>
+          <div className="truncate">
+            <span
+              className="block font-montserrat text-xs text-text-primary font-medium truncate"
+              title={displayEmail}
+            >
+              {profile?.name || displayEmail.split("@")[0]}
+            </span>
+            <span className="block font-montserrat text-[10px] text-text-tertiary">{roleName}</span>
+          </div>
         </div>
-        <div>
-          <span className="block font-tenor uppercase tracking-leif text-[11px] text-text-primary font-semibold">
-            Brilliant Event
-          </span>
-          <span className="block font-assistant text-[11px] text-text-tertiary">
-            Bar Catering CRM
-          </span>
-        </div>
+        <button
+          onClick={() => signOut()}
+          title="Выйти из системы"
+          className="p-1.5 rounded-lg text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   )

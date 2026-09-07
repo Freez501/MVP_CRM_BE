@@ -50,6 +50,8 @@ export function Dialog({
         onClick={onClose}
       />
       <div
+        role="dialog"
+        aria-modal="true"
         className={`relative w-full ${widthClasses} bg-bg-card border-2 border-border-sketch rounded-xl shadow-2xl p-5 sm:p-6 z-10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden`}
       >
         <div className="flex items-start justify-between pb-3 border-b border-border/70 mb-4">

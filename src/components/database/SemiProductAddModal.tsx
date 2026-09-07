@@ -50,7 +50,7 @@ export function SemiProductAddModal({
       setOutputUnit(initialData.output_unit || initialData.unit || "л")
 
       const recItems: RecipeItemState[] = Object.entries(initialData.recipe || {}).map(
-        ([ing, amount], idx) => {
+        ([ing, amount]) => {
           const cleanKey = ing.replace(/^\(пф\)\s*/i, "")
           const info = ingredientInfo[ing] || ingredientInfo[cleanKey] || {}
           const unit = info.unit || "мл"
@@ -69,7 +69,7 @@ export function SemiProductAddModal({
           }
 
           return {
-            id: `pf_init_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             ing,
             amount: displayAmount,
             unit: displayUnit,
@@ -101,7 +101,7 @@ export function SemiProductAddModal({
         },
       ])
     }
-  }, [open, initialData])
+  }, [open, initialData, availableIngredients, ingredientInfo])
 
   // ================= DRAG & DROP =================
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -170,7 +170,7 @@ export function SemiProductAddModal({
     setRecipe((prev) => [
       ...prev,
       {
-        id: `rec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         ing: defaultIng,
         amount: 500,
         unit: "мл",

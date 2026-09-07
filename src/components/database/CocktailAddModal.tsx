@@ -73,7 +73,7 @@ export function CocktailAddModal({
       setCategory(initialData.category || categories[0] || "классические")
 
       const recItems: RecipeItemState[] = Object.entries(initialData.recipe || {}).map(
-        ([ing, amount], idx) => {
+        ([ing, amount]) => {
           const info = ingredientInfo[ing] || {}
           const unit = info.unit || "мл"
           let displayAmount = amount
@@ -91,7 +91,7 @@ export function CocktailAddModal({
           }
 
           return {
-            id: `rec_init_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             ing,
             amount: displayAmount,
             unit: displayUnit,
@@ -113,7 +113,7 @@ export function CocktailAddModal({
 
       const decItems: DecItemState[] = []
       const iceItems: IceItemState[] = []
-      Object.entries(initialData.decorations || {}).forEach(([key, amount], idx) => {
+      Object.entries(initialData.decorations || {}).forEach(([key, amount]) => {
         const k = key.toLowerCase()
         if (
           k.includes("лед") ||
@@ -127,14 +127,14 @@ export function CocktailAddModal({
         ) {
           const isFig = k.includes("шар") || k.includes("стик") || k.includes("фигур")
           iceItems.push({
-            id: `ice_init_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             key,
             amount,
             unit: isFig ? "шт" : "кг",
           })
         } else {
           decItems.push({
-            id: `dec_init_${idx}_${Date.now()}`,
+            id: crypto.randomUUID(),
             key,
             amount,
             unit: ingredientInfo[key]?.unit || "шт",
@@ -161,7 +161,7 @@ export function CocktailAddModal({
       setIceList([])
       setSelectedGlass("none")
     }
-  }, [open, initialData])
+  }, [open, initialData, categories, availableIngredients, ingredientInfo])
 
   // ================= DRAG & DROP =================
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -225,7 +225,7 @@ export function CocktailAddModal({
     setRecipe((prev) => [
       ...prev,
       {
-        id: `rec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         ing: defaultIng,
         amount: 50,
         unit: "мл",
@@ -267,7 +267,7 @@ export function CocktailAddModal({
     setDecorations((prev) => [
       ...prev,
       {
-        id: `dec_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         key: defaultDec,
         amount: dbUnit === "г" ? 15 : 1,
         unit: dbUnit,
@@ -308,7 +308,7 @@ export function CocktailAddModal({
     setIceList((prev) => [
       ...prev,
       {
-        id: `ice_${Date.now()}_${Math.random()}`,
+        id: crypto.randomUUID(),
         key: defaultIce,
         amount: isFigured ? 1 : 0.2,
         unit: isFigured ? "шт" : "кг",

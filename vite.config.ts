@@ -73,10 +73,23 @@ export default defineConfig({
       ignored: ["**/src/data/cocktails_db.json"],
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          jspdf: ["jspdf"],
+          html2canvas: ["html2canvas"],
+          icons: ["lucide-react"],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
     css: true,
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
   },
 })

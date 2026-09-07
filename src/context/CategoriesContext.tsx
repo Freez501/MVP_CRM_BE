@@ -1,10 +1,11 @@
-import { createContext, useContext, ReactNode, useMemo, useCallback } from "react"
+import { createContext, useContext, ReactNode, useMemo, useCallback, useEffect } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import db from "@/data/cocktails_db.json"
 import { CocktailsDb } from "@/types/db"
 import { useActivities } from "./ActivitiesContext"
 import { saveFullDbToDisk } from "./DatabaseSyncService"
 import { CURRENT_USER } from "@/constants"
+import { supabase } from "@/lib/supabase"
 
 const baseDb = db as CocktailsDb
 
@@ -28,6 +29,22 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
 
   const { addActivity } = useActivities()
 
+  // Load from Supabase on mount
+  useEffect(() => {
+    supabase
+      .from("categories")
+      .select("*")
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const map: Record<string, string> = {}
+          for (const row of data as { key: string; name: string }[]) {
+            map[row.key] = row.name
+          }
+          setCustomCategoryNames((prev) => ({ ...prev, ...map }))
+        }
+      })
+  }, [setCustomCategoryNames])
+
   const categoryNames = useMemo(() => {
     const merged = { ...baseDb.category_names, ...customCategoryNames }
     deletedCategoryKeys.forEach((k) => delete merged[k])
@@ -47,6 +64,17 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         description: `Добавлена категория «${displayName}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("categories")
+        .upsert({
+          key: cleanKey,
+          name: displayName.trim(),
+        })
+        .then(({ error }) => {
+          if (error) console.warn("Supabase category upsert warning:", error.message)
+        })
     },
     [categoryNames, setCustomCategoryNames, setDeletedCategoryKeys, addActivity]
   )
@@ -66,6 +94,15 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         description: `Удалена категория «${name}»`,
         user: CURRENT_USER,
       })
+
+      // Sync to Supabase
+      supabase
+        .from("categories")
+        .delete()
+        .eq("key", cleanKey)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase category delete warning:", error.message)
+        })
     },
     [categoryNames, setDeletedCategoryKeys, addActivity]
   )

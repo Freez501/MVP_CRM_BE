@@ -1,5 +1,23 @@
 export type EventStage = "new" | "in_progress" | "confirmed" | "done" | "cancelled"
 
+export interface EventDetails {
+  departure?: string
+  setup?: string
+  start?: string
+  end?: string
+  clothing?: string
+  bar?: string
+  barComment?: string
+  shelf?: string
+  shelfComment?: string
+  pyramid?: string
+  pyramidComment?: string
+  decorations?: string[]
+  decorationComment?: string
+  menu?: "us" | "client"
+  cocktails?: { name: string; qty: number; key?: string }[]
+}
+
 export interface Event {
   id: string
   title: string
@@ -11,6 +29,7 @@ export interface Event {
   stage: EventStage
   value: number
   comment: string
+  details?: EventDetails
   createdAt: string
   updatedAt: string
 }
@@ -18,10 +37,12 @@ export interface Event {
 export interface Client {
   id: string
   name: string
-  email: string
+  email?: string
   phone?: string
   company?: string
+  notes?: string
   createdAt: string
+  updatedAt?: string
 }
 
 export interface Activity {
@@ -30,4 +51,14 @@ export interface Activity {
   description: string
   timestamp: string
   user: string
+}
+
+export type UserRole = "admin" | "partner" | "staff"
+
+export interface UserProfile {
+  id: string
+  email: string
+  role: UserRole
+  name?: string
+  createdAt?: string
 }
