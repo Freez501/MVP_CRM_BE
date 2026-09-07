@@ -8,16 +8,10 @@ export default function Dashboard() {
   const { events } = useEvents()
   const { clients } = useClients()
 
-  const activeEvents = events.filter(
-    (e) => e.stage !== "done" && e.stage !== "cancelled"
-  )
-  const totalRevenue = events
-    .filter((e) => e.stage === "done")
-    .reduce((sum, e) => sum + e.value, 0)
+  const activeEvents = events.filter((e) => e.stage !== "done" && e.stage !== "cancelled")
+  const totalRevenue = events.filter((e) => e.stage === "done").reduce((sum, e) => sum + e.value, 0)
   const doneCount = events.filter((e) => e.stage === "done").length
-  const conversion = events.length
-    ? Math.round((doneCount / events.length) * 100)
-    : 0
+  const conversion = events.length ? Math.round((doneCount / events.length) * 100) : 0
 
   return (
     <div className="space-y-8">

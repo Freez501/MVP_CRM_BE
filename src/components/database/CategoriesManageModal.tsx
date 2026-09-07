@@ -20,7 +20,9 @@ export function CategoriesManageModal({
   onRemoveCategory,
 }: CategoriesManageModalProps) {
   const [newName, setNewName] = useState("")
-  const [deletingCategory, setDeletingCategory] = useState<{ key: string; label: string } | null>(null)
+  const [deletingCategory, setDeletingCategory] = useState<{ key: string; label: string } | null>(
+    null
+  )
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,7 +49,12 @@ export function CategoriesManageModal({
               onChange={(e) => setNewName(e.target.value)}
               className="flex-1 h-9 bg-bg-card border-2 border-border-sketch rounded px-3 font-montserrat text-xs text-text-primary focus:outline-none focus:border-brand"
             />
-            <Button type="submit" variant="primary" size="sm" className="h-9 shrink-0 flex items-center gap-1">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              className="h-9 shrink-0 flex items-center gap-1"
+            >
               <Plus className="w-3.5 h-3.5" />
               Добавить
             </Button>
@@ -70,9 +77,7 @@ export function CategoriesManageModal({
                     <span className="font-montserrat text-xs font-medium text-text-primary">
                       {label}
                     </span>
-                    <span className="font-montserrat text-[10px] text-text-tertiary">
-                      ({key})
-                    </span>
+                    <span className="font-montserrat text-[10px] text-text-tertiary">({key})</span>
                   </div>
 
                   <button

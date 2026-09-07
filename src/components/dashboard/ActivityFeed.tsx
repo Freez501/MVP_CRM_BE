@@ -37,7 +37,9 @@ export function ActivityFeed() {
               )}
               <div className="w-[15px] h-[15px] rounded-full bg-accent-secondary border-2 border-bg-card shrink-0 mt-1 relative z-10" />
               <div>
-                <p className="font-montserrat text-sm text-text-secondary">{activity.description}</p>
+                <p className="font-montserrat text-sm text-text-secondary">
+                  {activity.description}
+                </p>
                 <p className="font-montserrat text-xs text-text-tertiary mt-1">
                   {formatTime(activity.timestamp)} · {activity.user}
                 </p>

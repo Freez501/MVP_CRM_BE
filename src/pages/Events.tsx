@@ -15,9 +15,7 @@ export default function Events() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <p className="font-cormorant italic text-[22px] text-text-secondary">
-          Воронка мероприятий
-        </p>
+        <p className="font-cormorant italic text-[22px] text-text-secondary">Воронка мероприятий</p>
         <Button variant="primary" onClick={() => setIsFormOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Добавить

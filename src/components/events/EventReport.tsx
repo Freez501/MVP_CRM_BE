@@ -17,7 +17,7 @@ interface EventReportProps {
 export function EventReport({ event, onClose }: EventReportProps) {
   if (!event) return null
 
-  const details = (event as any).details || {}
+  const details = (event as Event & { details?: Record<string, any> }).details || {}
 
   return createPortal(
     <div className="fixed inset-0 z-[100] bg-bg-card hidden print:block overflow-y-auto p-12">
@@ -31,20 +31,30 @@ export function EventReport({ event, onClose }: EventReportProps) {
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">Заказчик</p>
+            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">
+              Заказчик
+            </p>
             <p className="font-cormorant text-xl text-text-primary">{event.clientName}</p>
           </div>
           <div>
-            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">Статус</p>
+            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">
+              Статус
+            </p>
             <p className="font-cormorant text-xl text-text-primary">{stageLabel[event.stage]}</p>
           </div>
           <div>
-            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">Бармены</p>
+            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">
+              Бармены
+            </p>
             <p className="font-cormorant text-xl text-text-primary">{event.bartendersCount}</p>
           </div>
           <div>
-            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">Бюджет</p>
-            <p className="font-cormorant text-xl text-text-primary">{event.value.toLocaleString()} ₽</p>
+            <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">
+              Бюджет
+            </p>
+            <p className="font-cormorant text-xl text-text-primary">
+              {event.value.toLocaleString()} ₽
+            </p>
           </div>
         </div>
 
@@ -76,10 +86,12 @@ export function EventReport({ event, onClose }: EventReportProps) {
             <Section title="Меню и коктейли">
               <Row label="Печать меню" value={details.menu === "us" ? "С нас" : "С заказчика"} />
               <div>
-                <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary mb-2">Коктейли</p>
+                <p className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary mb-2">
+                  Коктейли
+                </p>
                 {details.cocktails?.length ? (
                   <ul className="space-y-1">
-                    {details.cocktails.map((c: any) => (
+                    {details.cocktails.map((c: { name: string; qty: number }) => (
                       <li key={c.name} className="font-montserrat text-text-secondary">
                         {c.name} — {c.qty} шт
                       </li>
@@ -130,7 +142,9 @@ function Row({ label, value }: { label: string; value?: string }) {
   if (!value) return null
   return (
     <div className="flex justify-between border-b border-border/50 py-2">
-      <span className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">{label}</span>
+      <span className="font-montserrat font-light uppercase tracking-[0.12em] text-xs text-text-tertiary">
+        {label}
+      </span>
       <span className="font-montserrat text-text-secondary">{value}</span>
     </div>
   )

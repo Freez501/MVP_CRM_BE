@@ -135,18 +135,11 @@ export function SemiProductEditModal({
   }
 
   const handleRecipeAmountChange = (index: number, val: number | string) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
-  const handleRecipeUnitChange = (
-    index: number,
-    newUnit: "мл" | "л" | "г" | "кг" | "шт"
-  ) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item))
-    )
+  const handleRecipeUnitChange = (index: number, newUnit: "мл" | "л" | "г" | "кг" | "шт") => {
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item)))
   }
 
   const handleRemoveRecipeItem = (index: number) => {
@@ -202,7 +195,10 @@ export function SemiProductEditModal({
   return (
     <>
       <Dialog open={open} onClose={onClose} title="Редактирование полуфабриката" maxWidth="xl">
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto overflow-x-hidden pr-1">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 max-h-[75vh] overflow-y-auto overflow-x-hidden pr-1"
+        >
           {/* Верхняя плашка действий */}
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <span className="text-xs font-montserrat uppercase tracking-wider text-text-secondary bg-surface-secondary/50 px-3 py-1 rounded-full font-medium">
@@ -219,168 +215,168 @@ export function SemiProductEditModal({
             </button>
           </div>
 
-        {/* Название и Выход */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-          <div className="flex-1 min-w-0">
-            <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
-              Название ПФ *
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-10 bg-bg-card border-2 border-border-sketch rounded px-3 font-cormorant italic text-lg text-text-primary focus:outline-none focus:border-brand"
-            />
-          </div>
-
-          <div className="w-full sm:w-44 shrink-0">
-            <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
-              Выход готового ПФ *
-            </label>
-            <div className="flex items-center gap-1.5 h-10">
+          {/* Название и Выход */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <div className="flex-1 min-w-0">
+              <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
+                Название ПФ *
+              </label>
               <input
                 type="text"
-                inputMode="decimal"
                 required
-                placeholder="0"
-                value={outputVolume}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setOutputVolume(e.target.value.replace(",", "."))}
-                className="w-24 h-full bg-bg-card border-2 border-border-sketch rounded px-2.5 font-montserrat text-sm text-right text-text-primary focus:outline-none focus:border-brand"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-10 bg-bg-card border-2 border-border-sketch rounded px-3 font-cormorant italic text-lg text-text-primary focus:outline-none focus:border-brand"
               />
-              <select
-                value={outputUnit}
-                onChange={(e) => setOutputUnit(e.target.value)}
-                className="flex-1 h-full bg-bg-card border-2 border-border-sketch rounded px-2 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer text-center"
-              >
-                <option value="л">л</option>
-                <option value="кг">кг</option>
-                <option value="г">г</option>
-                <option value="мл">мл</option>
-                <option value="шт">шт</option>
-              </select>
+            </div>
+
+            <div className="w-full sm:w-44 shrink-0">
+              <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
+                Выход готового ПФ *
+              </label>
+              <div className="flex items-center gap-1.5 h-10">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  required
+                  placeholder="0"
+                  value={outputVolume}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => setOutputVolume(e.target.value.replace(",", "."))}
+                  className="w-24 h-full bg-bg-card border-2 border-border-sketch rounded px-2.5 font-montserrat text-sm text-right text-text-primary focus:outline-none focus:border-brand"
+                />
+                <select
+                  value={outputUnit}
+                  onChange={(e) => setOutputUnit(e.target.value)}
+                  className="flex-1 h-full bg-bg-card border-2 border-border-sketch rounded px-2 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer text-center"
+                >
+                  <option value="л">л</option>
+                  <option value="кг">кг</option>
+                  <option value="г">г</option>
+                  <option value="мл">мл</option>
+                  <option value="шт">шт</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Состав полуфабриката */}
-        <div className="min-w-0">
-          <div className="flex items-center justify-between mb-1.5">
-            <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
-              Ингредиенты рецепта ({recipe.length})
-            </h4>
-            <button
-              type="button"
-              onClick={handleAddRecipeItem}
-              className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
-            >
-              <Plus className="w-3 h-3" />
-              Добавить
-            </button>
-          </div>
+          {/* Состав полуфабриката */}
+          <div className="min-w-0">
+            <div className="flex items-center justify-between mb-1.5">
+              <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
+                Ингредиенты рецепта ({recipe.length})
+              </h4>
+              <button
+                type="button"
+                onClick={handleAddRecipeItem}
+                className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Добавить
+              </button>
+            </div>
 
-          <div className="space-y-1.5">
-            {recipe.length === 0 ? (
-              <p className="text-xs font-montserrat text-text-tertiary py-3 text-center bg-bg-app rounded border border-border">
-                Нет ингредиентов
-              </p>
-            ) : (
-              recipe.map((item, index) => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border transition-all ${
-                    draggedIndex === index
-                      ? "opacity-40 border-dashed border-brand"
-                      : "border-border hover:border-border-sketch"
-                  }`}
-                >
+            <div className="space-y-1.5">
+              {recipe.length === 0 ? (
+                <p className="text-xs font-montserrat text-text-tertiary py-3 text-center bg-bg-app rounded border border-border">
+                  Нет ингредиентов
+                </p>
+              ) : (
+                recipe.map((item, index) => (
                   <div
-                    className="cursor-grab active:cursor-grabbing text-text-tertiary/60 hover:text-brand shrink-0"
-                    title="Перетащите"
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border transition-all ${
+                      draggedIndex === index
+                        ? "opacity-40 border-dashed border-brand"
+                        : "border-border hover:border-border-sketch"
+                    }`}
                   >
-                    <MoveVertical className="w-3.5 h-3.5" />
-                  </div>
+                    <div
+                      className="cursor-grab active:cursor-grabbing text-text-tertiary/60 hover:text-brand shrink-0"
+                      title="Перетащите"
+                    >
+                      <MoveVertical className="w-3.5 h-3.5" />
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <SearchableSelect
-                      value={item.ing}
-                      onChange={(val) => handleRecipeIngChange(index, val)}
-                      options={availableIngredients}
-                      placeholder="Ингредиент..."
+                    <div className="flex-1 min-w-0">
+                      <SearchableSelect
+                        value={item.ing}
+                        onChange={(val) => handleRecipeIngChange(index, val)}
+                        options={availableIngredients}
+                        placeholder="Ингредиент..."
+                      />
+                    </div>
+
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={item.amount}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) =>
+                        handleRecipeAmountChange(index, e.target.value.replace(",", "."))
+                      }
+                      className="w-14 shrink-0 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
                     />
+
+                    <select
+                      value={item.unit}
+                      onChange={(e) =>
+                        handleRecipeUnitChange(
+                          index,
+                          e.target.value as "мл" | "л" | "г" | "кг" | "шт"
+                        )
+                      }
+                      className="w-12 shrink-0 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
+                    >
+                      <option value="мл">мл</option>
+                      <option value="л">л</option>
+                      <option value="г">г</option>
+                      <option value="кг">кг</option>
+                      <option value="шт">шт</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRecipeItem(index)}
+                      className="text-text-tertiary hover:text-brand transition-colors p-0.5 shrink-0"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    value={item.amount}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) =>
-                      handleRecipeAmountChange(index, e.target.value.replace(",", "."))
-                    }
-                    className="w-14 shrink-0 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
-                  />
-
-                  <select
-                    value={item.unit}
-                    onChange={(e) =>
-                      handleRecipeUnitChange(
-                        index,
-                        e.target.value as "мл" | "л" | "г" | "кг" | "шт"
-                      )
-                    }
-                    className="w-12 shrink-0 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
-                  >
-                    <option value="мл">мл</option>
-                    <option value="л">л</option>
-                    <option value="г">г</option>
-                    <option value="кг">кг</option>
-                    <option value="шт">шт</option>
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveRecipeItem(index)}
-                    className="text-text-tertiary hover:text-brand transition-colors p-0.5 shrink-0"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Кнопки сохранения */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-            Отмена
-          </Button>
-          <Button type="submit" variant="primary" size="sm">
-            Сохранить ПФ
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+          {/* Кнопки сохранения */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+              Отмена
+            </Button>
+            <Button type="submit" variant="primary" size="sm">
+              Сохранить ПФ
+            </Button>
+          </div>
+        </form>
+      </Dialog>
 
-    <ConfirmDialog
-      open={isConfirmDeleteOpen}
-      onClose={() => setIsConfirmDeleteOpen(false)}
-      onConfirm={() => {
-        onDelete(pfKey)
-        onClose()
-      }}
-      title="Удаление полуфабриката"
-      description={`Удалить полуфабрикат «${semiProduct.name}» из базы?`}
-      confirmText="Удалить"
-    />
-  </>
+      <ConfirmDialog
+        open={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          onDelete(pfKey)
+          onClose()
+        }}
+        title="Удаление полуфабриката"
+        description={`Удалить полуфабрикат «${semiProduct.name}» из базы?`}
+        confirmText="Удалить"
+      />
+    </>
   )
 }

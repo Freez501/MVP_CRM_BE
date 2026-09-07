@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from "react"
+import { createContext, useContext, ReactNode, useCallback } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import { mockActivities } from "@/data/mockData"
 import { Activity } from "@/types"
@@ -12,20 +12,26 @@ interface ActivitiesContextType {
 const ActivitiesContext = createContext<ActivitiesContextType | undefined>(undefined)
 
 export function ActivitiesProvider({ children }: { children: ReactNode }) {
-  const [activities, setActivities] = useLocalStorage<Activity[]>("brilliant-activities", mockActivities)
+  const [activities, setActivities] = useLocalStorage<Activity[]>(
+    "brilliant-activities",
+    mockActivities
+  )
 
-  const addActivity = (item: Omit<Activity, "id" | "timestamp">) => {
-    const newActivity: Activity = {
-      ...item,
-      id: "act_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
-      timestamp: new Date().toISOString(),
-    }
-    setActivities((prev) => [newActivity, ...prev])
-  }
+  const addActivity = useCallback(
+    (item: Omit<Activity, "id" | "timestamp">) => {
+      const newActivity: Activity = {
+        ...item,
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+      }
+      setActivities((prev) => [newActivity, ...prev])
+    },
+    [setActivities]
+  )
 
-  const clearActivities = () => {
+  const clearActivities = useCallback(() => {
     setActivities([])
-  }
+  }, [setActivities])
 
   return (
     <ActivitiesContext.Provider value={{ activities, addActivity, clearActivities }}>

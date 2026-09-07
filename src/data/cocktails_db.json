@@ -1521,10 +1521,5 @@
     "фрукты": "Фрукты",
     "ягоды": "Ягоды"
   },
-  "cocktail_categories": [
-    "special non alc",
-    "авторские",
-    "классические",
-    "special"
-  ]
+  "cocktail_categories": ["special non alc", "авторские", "классические", "special"]
 }

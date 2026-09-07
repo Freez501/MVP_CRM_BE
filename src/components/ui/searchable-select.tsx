@@ -29,7 +29,10 @@ export function SearchableSelect({
 
   const selectedOption = useMemo(() => {
     if (!value) return undefined
-    const cleanVal = value.trim().toLowerCase().replace(/^\(пф\)\s*/i, "")
+    const cleanVal = value
+      .trim()
+      .toLowerCase()
+      .replace(/^\(пф\)\s*/i, "")
     return options.find(
       (opt) =>
         opt.key === value ||
@@ -91,9 +94,15 @@ export function SearchableSelect({
         className="w-full flex items-center justify-between gap-1.5 text-left bg-transparent font-montserrat text-xs sm:text-sm text-text-primary px-1 py-1 rounded hover:bg-surface-secondary/20 transition-colors focus:outline-none"
       >
         <span className="truncate font-medium">
-          {displayName ? displayName : <span className="text-text-tertiary font-normal">{placeholder}</span>}
+          {displayName ? (
+            displayName
+          ) : (
+            <span className="text-text-tertiary font-normal">{placeholder}</span>
+          )}
         </span>
-        <ChevronDown className={`w-3.5 h-3.5 text-text-tertiary shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-text-tertiary shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
 
       {/* Выпадающий блок с поиском */}
@@ -137,7 +146,9 @@ export function SearchableSelect({
                     }`}
                   >
                     <span className="truncate">{opt.name}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-text-primary shrink-0 ml-2" />}
+                    {isSelected && (
+                      <Check className="w-3.5 h-3.5 text-text-primary shrink-0 ml-2" />
+                    )}
                   </button>
                 )
               })

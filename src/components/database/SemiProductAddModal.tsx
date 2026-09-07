@@ -154,18 +154,11 @@ export function SemiProductAddModal({
   }
 
   const handleRecipeAmountChange = (index: number, val: number | string) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
-  const handleRecipeUnitChange = (
-    index: number,
-    newUnit: "мл" | "л" | "г" | "кг" | "шт"
-  ) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item))
-    )
+  const handleRecipeUnitChange = (index: number, newUnit: "мл" | "л" | "г" | "кг" | "шт") => {
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item)))
   }
 
   const handleRemoveRecipeItem = (index: number) => {
@@ -190,7 +183,11 @@ export function SemiProductAddModal({
     e.preventDefault()
     if (!name.trim()) return
 
-    const rawName = name.trim().toLowerCase().replace(/^\(пф\)\s*/i, "").replace(/^пф\s*/i, "")
+    const rawName = name
+      .trim()
+      .toLowerCase()
+      .replace(/^\(пф\)\s*/i, "")
+      .replace(/^пф\s*/i, "")
     const key = rawName.replace(/\s+/g, "_")
 
     const recipeObj: Record<string, number> = {}
@@ -235,7 +232,10 @@ export function SemiProductAddModal({
 
   return (
     <Dialog open={open} onClose={onClose} title="Новый полуфабрикат (ПФ)" maxWidth="xl">
-      <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto overflow-x-hidden pr-1">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 max-h-[75vh] overflow-y-auto overflow-x-hidden pr-1"
+      >
         {/* Название и Выход */}
         <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
           <div className="flex-1 min-w-0">
@@ -344,10 +344,7 @@ export function SemiProductAddModal({
                 <select
                   value={item.unit}
                   onChange={(e) =>
-                    handleRecipeUnitChange(
-                      index,
-                      e.target.value as "мл" | "л" | "г" | "кг" | "шт"
-                    )
+                    handleRecipeUnitChange(index, e.target.value as "мл" | "л" | "г" | "кг" | "шт")
                   }
                   className="w-12 shrink-0 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
                 >

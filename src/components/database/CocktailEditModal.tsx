@@ -81,13 +81,10 @@ export function CocktailEditModal({
       // 1. Парсим recipe (выделяем лёд в отдельный список, жидкости переводим в мл)
       Object.entries(cocktail.recipe || {}).forEach(([ing, val], idx) => {
         const isIce =
-          ing.includes("лед") ||
-          ing.includes("лёд") ||
-          availableIce.some((i) => i.key === ing)
+          ing.includes("лед") || ing.includes("лёд") || availableIce.some((i) => i.key === ing)
 
         if (isIce) {
-          const isFigured =
-            ing.includes("шар") || ing.includes("стик") || ing.includes("фигурный")
+          const isFigured = ing.includes("шар") || ing.includes("стик") || ing.includes("фигурный")
           parsedIce.push({
             id: `ice_rec_${idx}_${Date.now()}`,
             key: ing,
@@ -212,18 +209,11 @@ export function CocktailEditModal({
   }
 
   const handleRecipeAmountChange = (index: number, val: number | string) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
-  const handleRecipeUnitChange = (
-    index: number,
-    newUnit: "мл" | "л" | "г" | "кг" | "шт"
-  ) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item))
-    )
+  const handleRecipeUnitChange = (index: number, newUnit: "мл" | "л" | "г" | "кг" | "шт") => {
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item)))
   }
 
   const handleRemoveRecipeItem = (index: number) => {
@@ -260,15 +250,11 @@ export function CocktailEditModal({
   }
 
   const handleDecAmountChange = (index: number, val: number | string) => {
-    setDecorations((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setDecorations((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
   const handleDecUnitChange = (index: number, val: string) => {
-    setDecorations((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: val } : item))
-    )
+    setDecorations((prev) => prev.map((item, i) => (i === index ? { ...item, unit: val } : item)))
   }
 
   const handleRemoveDecItem = (index: number) => {
@@ -294,8 +280,7 @@ export function CocktailEditModal({
     setIceList((prev) =>
       prev.map((item, i) => {
         if (i === index) {
-          const isFigured =
-            val.includes("шар") || val.includes("стик") || val.includes("фигурный")
+          const isFigured = val.includes("шар") || val.includes("стик") || val.includes("фигурный")
           return {
             ...item,
             key: val,
@@ -309,9 +294,7 @@ export function CocktailEditModal({
   }
 
   const handleIceAmountChange = (index: number, val: number | string) => {
-    setIceList((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setIceList((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
   const handleRemoveIceItem = (index: number) => {
@@ -409,153 +392,83 @@ export function CocktailEditModal({
             </button>
           </div>
 
-        {/* Название и категория */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
-              Название *
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-bg-card border-2 border-border-sketch rounded px-3 py-1.5 font-cormorant italic text-lg text-text-primary focus:outline-none focus:border-brand"
-            />
-          </div>
+          {/* Название и категория */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
+                Название *
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-bg-card border-2 border-border-sketch rounded px-3 py-1.5 font-cormorant italic text-lg text-text-primary focus:outline-none focus:border-brand"
+              />
+            </div>
 
-          <div>
-            <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
-              Категория *
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-bg-card border-2 border-border-sketch rounded px-3 py-2 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* ================= 1. ИНГРЕДИЕНТЫ ================= */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
-              Ингредиенты ({recipe.length})
-            </h4>
-            <button
-              type="button"
-              onClick={handleAddRecipeItem}
-              className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
-            >
-              <Plus className="w-3 h-3" />
-              Добавить
-            </button>
-          </div>
-
-          <div className="space-y-1.5">
-            {recipe.map((item, index) => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={`flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border transition-all ${
-                  draggedIndex === index
-                    ? "opacity-40 border-dashed border-brand"
-                    : "border-border hover:border-border-sketch"
-                }`}
+            <div>
+              <label className="block font-montserrat font-light uppercase tracking-[0.12em] text-[11px] text-text-tertiary mb-1">
+                Категория *
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-bg-card border-2 border-border-sketch rounded px-3 py-2 font-montserrat text-xs uppercase tracking-wider text-text-primary focus:outline-none focus:border-brand cursor-pointer"
               >
-                <div
-                  className="cursor-grab active:cursor-grabbing text-text-tertiary/60 hover:text-brand"
-                  title="Перетащите"
-                >
-                  <MoveVertical className="w-3.5 h-3.5" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <SearchableSelect
-                    value={item.ing}
-                    onChange={(val) => handleRecipeIngChange(index, val)}
-                    options={availableIngredients}
-                    placeholder="Ингредиент..."
-                  />
-                </div>
-
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0"
-                  value={item.amount}
-                  onFocus={(e) => e.target.select()}
-                  onChange={(e) =>
-                    handleRecipeAmountChange(index, e.target.value.replace(",", "."))
-                  }
-                  className="w-14 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
-                />
-
-                <select
-                  value={item.unit}
-                  onChange={(e) =>
-                    handleRecipeUnitChange(
-                      index,
-                      e.target.value as "мл" | "л" | "г" | "кг" | "шт"
-                    )
-                  }
-                  className="w-12 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
-                >
-                  <option value="мл">мл</option>
-                  <option value="л">л</option>
-                  <option value="г">г</option>
-                  <option value="кг">кг</option>
-                  <option value="шт">шт</option>
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => handleRemoveRecipeItem(index)}
-                  className="text-text-tertiary hover:text-brand transition-colors p-0.5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ================= 2. УКРАШЕНИЯ ================= */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
-              Украшения
-            </h4>
-            <button
-              type="button"
-              onClick={handleAddDecItem}
-              className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
-            >
-              <Plus className="w-3 h-3" />
-              Добавить
-            </button>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {decorations.length > 0 && (
+          {/* ================= 1. ИНГРЕДИЕНТЫ ================= */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
+                Ингредиенты ({recipe.length})
+              </h4>
+              <button
+                type="button"
+                onClick={handleAddRecipeItem}
+                className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Добавить
+              </button>
+            </div>
+
             <div className="space-y-1.5">
-              {decorations.map((d, index) => (
-                <div key={d.id} className="flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border border-border">
+              {recipe.map((item, index) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border transition-all ${
+                    draggedIndex === index
+                      ? "opacity-40 border-dashed border-brand"
+                      : "border-border hover:border-border-sketch"
+                  }`}
+                >
+                  <div
+                    className="cursor-grab active:cursor-grabbing text-text-tertiary/60 hover:text-brand"
+                    title="Перетащите"
+                  >
+                    <MoveVertical className="w-3.5 h-3.5" />
+                  </div>
+
                   <div className="flex-1 min-w-0">
                     <SearchableSelect
-                      value={d.key}
-                      onChange={(val) => handleDecKeyChange(index, val)}
-                      options={availableDecorations}
-                      placeholder="Украшение..."
+                      value={item.ing}
+                      onChange={(val) => handleRecipeIngChange(index, val)}
+                      options={availableIngredients}
+                      placeholder="Ингредиент..."
                     />
                   </div>
 
@@ -563,29 +476,34 @@ export function CocktailEditModal({
                     type="text"
                     inputMode="decimal"
                     placeholder="0"
-                    value={d.amount}
+                    value={item.amount}
                     onFocus={(e) => e.target.select()}
                     onChange={(e) =>
-                      handleDecAmountChange(index, e.target.value.replace(",", "."))
+                      handleRecipeAmountChange(index, e.target.value.replace(",", "."))
                     }
                     className="w-14 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
                   />
 
                   <select
-                    value={d.unit}
-                    onChange={(e) => handleDecUnitChange(index, e.target.value)}
-                    className="w-16 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
+                    value={item.unit}
+                    onChange={(e) =>
+                      handleRecipeUnitChange(
+                        index,
+                        e.target.value as "мл" | "л" | "г" | "кг" | "шт"
+                      )
+                    }
+                    className="w-12 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
                   >
+                    <option value="мл">мл</option>
+                    <option value="л">л</option>
                     <option value="г">г</option>
+                    <option value="кг">кг</option>
                     <option value="шт">шт</option>
-                    <option value="долька">долька</option>
-                    <option value="ветка">ветка</option>
-                    <option value="лист">лист</option>
                   </select>
 
                   <button
                     type="button"
-                    onClick={() => handleRemoveDecItem(index)}
+                    onClick={() => handleRemoveRecipeItem(index)}
                     className="text-text-tertiary hover:text-brand transition-colors p-0.5"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -593,59 +511,37 @@ export function CocktailEditModal({
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* ================= 3. ПОСУДА И ЛЁД ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
-          {/* Бокал */}
-          <div>
-            <label className="block font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary mb-1">
-              Бокал / Посуда
-            </label>
-            <div className="bg-bg-app px-2 py-1 rounded border border-border">
-              <SearchableSelect
-                value={selectedGlass || "none"}
-                onChange={(val) => setSelectedGlass(val === "none" ? "" : val)}
-                options={[{ key: "none", name: "Без бокала / навынос" }, ...availableGlassware]}
-                placeholder="Выбрать бокал..."
-              />
-            </div>
           </div>
 
-          {/* Лёд */}
+          {/* ================= 2. УКРАШЕНИЯ ================= */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
-                Лёд
-              </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <h4 className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
+                Украшения
+              </h4>
               <button
                 type="button"
-                onClick={handleAddIceItem}
-                className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-0.5"
+                onClick={handleAddDecItem}
+                className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" />
-                Лёд
+                Добавить
               </button>
             </div>
 
-            {iceList.length === 0 ? (
-              <div
-                onClick={handleAddIceItem}
-                className="bg-bg-app px-2.5 py-2 rounded border border-border text-xs font-montserrat text-text-tertiary cursor-pointer hover:border-brand"
-              >
-                Без льда (+ добавить)
-              </div>
-            ) : (
+            {decorations.length > 0 && (
               <div className="space-y-1.5">
-                {iceList.map((ice, index) => (
-                  <div key={ice.id} className="flex items-center gap-1.5 bg-bg-app px-2 py-1 rounded border border-border">
+                {decorations.map((d, index) => (
+                  <div
+                    key={d.id}
+                    className="flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border border-border"
+                  >
                     <div className="flex-1 min-w-0">
                       <SearchableSelect
-                        value={ice.key}
-                        onChange={(val) => handleIceKeyChange(index, val)}
-                        options={availableIce}
-                        placeholder="Тип льда..."
+                        value={d.key}
+                        onChange={(val) => handleDecKeyChange(index, val)}
+                        options={availableDecorations}
+                        placeholder="Украшение..."
                       />
                     </div>
 
@@ -653,55 +549,148 @@ export function CocktailEditModal({
                       type="text"
                       inputMode="decimal"
                       placeholder="0"
-                      value={ice.amount}
+                      value={d.amount}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) =>
-                        handleIceAmountChange(index, e.target.value.replace(",", "."))
+                        handleDecAmountChange(index, e.target.value.replace(",", "."))
                       }
                       className="w-14 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
                     />
 
-                    <span className="text-[11px] font-montserrat text-text-tertiary w-4">
-                      {ice.unit}
-                    </span>
+                    <select
+                      value={d.unit}
+                      onChange={(e) => handleDecUnitChange(index, e.target.value)}
+                      className="w-16 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
+                    >
+                      <option value="г">г</option>
+                      <option value="шт">шт</option>
+                      <option value="долька">долька</option>
+                      <option value="ветка">ветка</option>
+                      <option value="лист">лист</option>
+                    </select>
 
                     <button
                       type="button"
-                      onClick={() => handleRemoveIceItem(index)}
-                      className="text-text-tertiary hover:text-brand p-0.5"
+                      onClick={() => handleRemoveDecItem(index)}
+                      className="text-text-tertiary hover:text-brand transition-colors p-0.5"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
 
-        {/* Кнопки сохранения */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-            Отмена
-          </Button>
-          <Button type="submit" variant="primary" size="sm">
-            Сохранить
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+          {/* ================= 3. ПОСУДА И ЛЁД ================= */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+            {/* Бокал */}
+            <div>
+              <label className="block font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary mb-1">
+                Бокал / Посуда
+              </label>
+              <div className="bg-bg-app px-2 py-1 rounded border border-border">
+                <SearchableSelect
+                  value={selectedGlass || "none"}
+                  onChange={(val) => setSelectedGlass(val === "none" ? "" : val)}
+                  options={[{ key: "none", name: "Без бокала / навынос" }, ...availableGlassware]}
+                  placeholder="Выбрать бокал..."
+                />
+              </div>
+            </div>
 
-    <ConfirmDialog
-      open={isConfirmDeleteOpen}
-      onClose={() => setIsConfirmDeleteOpen(false)}
-      onConfirm={() => {
-        onDelete(cocktailKey)
-        onClose()
-      }}
-      title="Удаление коктейля"
-      description={`Удалить коктейль «${cocktail.name}» из базы?`}
-      confirmText="Удалить"
-    />
-  </>
+            {/* Лёд */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-montserrat font-semibold uppercase tracking-[0.12em] text-[11px] text-text-primary">
+                  Лёд
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddIceItem}
+                  className="text-[11px] font-montserrat font-semibold uppercase tracking-wider text-brand hover:underline flex items-center gap-0.5"
+                >
+                  <Plus className="w-3 h-3" />
+                  Лёд
+                </button>
+              </div>
+
+              {iceList.length === 0 ? (
+                <div
+                  onClick={handleAddIceItem}
+                  className="bg-bg-app px-2.5 py-2 rounded border border-border text-xs font-montserrat text-text-tertiary cursor-pointer hover:border-brand"
+                >
+                  Без льда (+ добавить)
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {iceList.map((ice, index) => (
+                    <div
+                      key={ice.id}
+                      className="flex items-center gap-1.5 bg-bg-app px-2 py-1 rounded border border-border"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <SearchableSelect
+                          value={ice.key}
+                          onChange={(val) => handleIceKeyChange(index, val)}
+                          options={availableIce}
+                          placeholder="Тип льда..."
+                        />
+                      </div>
+
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0"
+                        value={ice.amount}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) =>
+                          handleIceAmountChange(index, e.target.value.replace(",", "."))
+                        }
+                        className="w-14 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
+                      />
+
+                      <span className="text-[11px] font-montserrat text-text-tertiary w-4">
+                        {ice.unit}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveIceItem(index)}
+                        className="text-text-tertiary hover:text-brand p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Кнопки сохранения */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+              Отмена
+            </Button>
+            <Button type="submit" variant="primary" size="sm">
+              Сохранить
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+
+      <ConfirmDialog
+        open={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          onDelete(cocktailKey)
+          onClose()
+        }}
+        title="Удаление коктейля"
+        description={`Удалить коктейль «${cocktail.name}» из базы?`}
+        confirmText="Удалить"
+      />
+    </>
   )
 }

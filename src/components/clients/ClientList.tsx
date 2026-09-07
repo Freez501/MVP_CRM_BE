@@ -25,10 +25,18 @@ export function ClientList({ clients }: ClientListProps) {
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-border">
-            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">Заказчик</th>
-            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">Компания</th>
-            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">Email</th>
-            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">Телефон</th>
+            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">
+              Заказчик
+            </th>
+            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">
+              Компания
+            </th>
+            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">
+              Email
+            </th>
+            <th className="px-6 py-3 font-montserrat font-light uppercase tracking-[0.15em] text-xs text-text-tertiary">
+              Телефон
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -45,9 +53,15 @@ export function ClientList({ clients }: ClientListProps) {
                   <span className="font-cormorant text-base text-text-primary">{client.name}</span>
                 </div>
               </td>
-              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">{client.company ?? "—"}</td>
-              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">{client.email}</td>
-              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">{client.phone ?? "—"}</td>
+              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">
+                {client.company ?? "—"}
+              </td>
+              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">
+                {client.email}
+              </td>
+              <td className="px-6 py-4 font-montserrat text-sm text-text-secondary">
+                {client.phone ?? "—"}
+              </td>
             </tr>
           ))}
         </tbody>

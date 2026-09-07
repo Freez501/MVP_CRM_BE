@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { IngredientData } from "@/context/DatabaseContext"
+import { IngredientData } from "@/context/IngredientsContext"
 
 interface IngredientAddModalProps {
   open: boolean
@@ -10,12 +10,7 @@ interface IngredientAddModalProps {
   onAdd: (data: IngredientData) => void
 }
 
-export function IngredientAddModal({
-  open,
-  onClose,
-  categories,
-  onAdd,
-}: IngredientAddModalProps) {
+export function IngredientAddModal({ open, onClose, categories, onAdd }: IngredientAddModalProps) {
   const [name, setName] = useState("")
   const [category, setCategory] = useState("алкоголь")
   const [unit, setUnit] = useState("л")

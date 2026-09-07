@@ -209,18 +209,11 @@ export function CocktailAddModal({
   }
 
   const handleRecipeAmountChange = (index: number, val: number | string) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
-  const handleRecipeUnitChange = (
-    index: number,
-    newUnit: "мл" | "л" | "г" | "кг" | "шт"
-  ) => {
-    setRecipe((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item))
-    )
+  const handleRecipeUnitChange = (index: number, newUnit: "мл" | "л" | "г" | "кг" | "шт") => {
+    setRecipe((prev) => prev.map((item, i) => (i === index ? { ...item, unit: newUnit } : item)))
   }
 
   const handleRemoveRecipeItem = (index: number) => {
@@ -257,15 +250,11 @@ export function CocktailAddModal({
   }
 
   const handleDecAmountChange = (index: number, val: number | string) => {
-    setDecorations((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setDecorations((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
   const handleDecUnitChange = (index: number, val: string) => {
-    setDecorations((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, unit: val } : item))
-    )
+    setDecorations((prev) => prev.map((item, i) => (i === index ? { ...item, unit: val } : item)))
   }
 
   const handleRemoveDecItem = (index: number) => {
@@ -291,8 +280,7 @@ export function CocktailAddModal({
     setIceList((prev) =>
       prev.map((item, i) => {
         if (i === index) {
-          const isFigured =
-            val.includes("шар") || val.includes("стик") || val.includes("фигурный")
+          const isFigured = val.includes("шар") || val.includes("стик") || val.includes("фигурный")
           return {
             ...item,
             key: val,
@@ -306,9 +294,7 @@ export function CocktailAddModal({
   }
 
   const handleIceAmountChange = (index: number, val: number | string) => {
-    setIceList((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, amount: val } : item))
-    )
+    setIceList((prev) => prev.map((item, i) => (i === index ? { ...item, amount: val } : item)))
   }
 
   const handleRemoveIceItem = (index: number) => {
@@ -486,10 +472,7 @@ export function CocktailAddModal({
                 <select
                   value={item.unit}
                   onChange={(e) =>
-                    handleRecipeUnitChange(
-                      index,
-                      e.target.value as "мл" | "л" | "г" | "кг" | "шт"
-                    )
+                    handleRecipeUnitChange(index, e.target.value as "мл" | "л" | "г" | "кг" | "шт")
                   }
                   className="w-12 bg-bg-card border border-border-sketch rounded px-1 py-1 font-montserrat text-[11px] text-text-secondary focus:outline-none focus:border-brand cursor-pointer text-center"
                 >
@@ -531,7 +514,10 @@ export function CocktailAddModal({
           {decorations.length > 0 && (
             <div className="space-y-1.5">
               {decorations.map((d, index) => (
-                <div key={d.id} className="flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border border-border">
+                <div
+                  key={d.id}
+                  className="flex items-center gap-2 bg-bg-app px-2.5 py-1.5 rounded border border-border"
+                >
                   <div className="flex-1 min-w-0">
                     <SearchableSelect
                       value={d.key}
@@ -547,9 +533,7 @@ export function CocktailAddModal({
                     placeholder="0"
                     value={d.amount}
                     onFocus={(e) => e.target.select()}
-                    onChange={(e) =>
-                      handleDecAmountChange(index, e.target.value.replace(",", "."))
-                    }
+                    onChange={(e) => handleDecAmountChange(index, e.target.value.replace(",", "."))}
                     className="w-14 bg-bg-card border border-border-sketch rounded px-1.5 py-1 font-montserrat text-xs text-right text-text-primary focus:outline-none focus:border-brand"
                   />
 
@@ -619,7 +603,10 @@ export function CocktailAddModal({
             ) : (
               <div className="space-y-1.5">
                 {iceList.map((ice, index) => (
-                  <div key={ice.id} className="flex items-center gap-1.5 bg-bg-app px-2 py-1 rounded border border-border">
+                  <div
+                    key={ice.id}
+                    className="flex items-center gap-1.5 bg-bg-app px-2 py-1 rounded border border-border"
+                  >
                     <div className="flex-1 min-w-0">
                       <SearchableSelect
                         value={ice.key}

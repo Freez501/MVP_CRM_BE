@@ -9,11 +9,7 @@ interface GlasswareAddModalProps {
   onAdd: (name: string) => void
 }
 
-export function GlasswareAddModal({
-  open,
-  onClose,
-  onAdd,
-}: GlasswareAddModalProps) {
+export function GlasswareAddModal({ open, onClose, onAdd }: GlasswareAddModalProps) {
   const [name, setName] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {

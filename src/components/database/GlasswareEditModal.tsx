@@ -81,7 +81,9 @@ export function GlasswareEditModal({
 
           {glassware.usageCount > 0 && (
             <p className="text-xs font-montserrat text-text-tertiary bg-bg-app px-3 py-2 rounded border border-border">
-              Используется в <span className="font-semibold text-text-primary">{glassware.usageCount}</span> коктейлях базы.
+              Используется в{" "}
+              <span className="font-semibold text-text-primary">{glassware.usageCount}</span>{" "}
+              коктейлях базы.
             </p>
           )}
 

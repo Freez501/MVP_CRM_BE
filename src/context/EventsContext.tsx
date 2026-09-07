@@ -1,8 +1,9 @@
-import { createContext, useContext, ReactNode } from "react"
+import { createContext, useContext, ReactNode, useCallback } from "react"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import { mockEvents } from "@/data/mockData"
 import { Event } from "@/types"
 import { useActivities } from "./ActivitiesContext"
+import { CURRENT_USER } from "@/constants"
 
 interface EventsContextType {
   events: Event[]
@@ -25,51 +26,60 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useLocalStorage<Event[]>("brilliant-events", mockEvents)
   const { addActivity } = useActivities()
 
-  const addEvent = (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">): Event => {
-    const now = new Date().toISOString()
-    const newEvent: Event = {
-      ...eventData,
-      id: "e_" + Date.now(),
-      createdAt: now,
-      updatedAt: now,
-    }
-    setEvents((prev) => [newEvent, ...prev])
-    addActivity({
-      type: "event_created",
-      description: `Создано мероприятие «${newEvent.title}»`,
-      user: "Влад",
-    })
-    return newEvent
-  }
+  const addEvent = useCallback(
+    (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">): Event => {
+      const now = new Date().toISOString()
+      const newEvent: Event = {
+        ...eventData,
+        id: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+      }
+      setEvents((prev) => [newEvent, ...prev])
+      addActivity({
+        type: "event_created",
+        description: `Создано мероприятие «${newEvent.title}»`,
+        user: CURRENT_USER,
+      })
+      return newEvent
+    },
+    [setEvents, addActivity]
+  )
 
-  const updateEvent = (id: string, updates: Partial<Event>) => {
-    setEvents((prev) => {
-      const target = prev.find((e) => e.id === id)
-      if (target && updates.stage && updates.stage !== target.stage) {
-        const stageName = STAGE_LABELS[updates.stage] || updates.stage
+  const updateEvent = useCallback(
+    (id: string, updates: Partial<Event>) => {
+      setEvents((prev) => {
+        const target = prev.find((e) => e.id === id)
+        if (target && updates.stage && updates.stage !== target.stage) {
+          const stageName = STAGE_LABELS[updates.stage] || updates.stage
+          addActivity({
+            type: "event_moved",
+            description: `«${target.title}» → ${stageName}`,
+            user: CURRENT_USER,
+          })
+        }
+        return prev.map((e) =>
+          e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString() } : e
+        )
+      })
+    },
+    [setEvents, addActivity]
+  )
+
+  const removeEvent = useCallback(
+    (id: string) => {
+      const target = events.find((e) => e.id === id)
+      setEvents((prev) => prev.filter((e) => e.id !== id))
+      if (target) {
         addActivity({
-          type: "event_moved",
-          description: `«${target.title}» → ${stageName}`,
-          user: "Влад",
+          type: "note_added",
+          description: `Удалено мероприятие «${target.title}»`,
+          user: CURRENT_USER,
         })
       }
-      return prev.map((e) =>
-        e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString() } : e
-      )
-    })
-  }
-
-  const removeEvent = (id: string) => {
-    const target = events.find((e) => e.id === id)
-    setEvents((prev) => prev.filter((e) => e.id !== id))
-    if (target) {
-      addActivity({
-        type: "note_added",
-        description: `Удалено мероприятие «${target.title}»`,
-        user: "Влад",
-      })
-    }
-  }
+    },
+    [events, setEvents, addActivity]
+  )
 
   return (
     <EventsContext.Provider value={{ events, addEvent, updateEvent, removeEvent }}>

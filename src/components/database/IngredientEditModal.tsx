@@ -3,7 +3,7 @@ import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { IngredientData } from "@/context/DatabaseContext"
+import { IngredientData } from "@/context/IngredientsContext"
 
 interface IngredientEditModalProps {
   open: boolean
@@ -35,7 +35,9 @@ export function IngredientEditModal({
       setCategory(ingredient.category || Object.keys(categories)[0] || "алкоголь")
       setUnit(ingredient.unit || "л")
       setPrice(ingredient.price || 0)
-      setBottle(ingredient.bottle !== undefined && ingredient.bottle !== null ? ingredient.bottle : "")
+      setBottle(
+        ingredient.bottle !== undefined && ingredient.bottle !== null ? ingredient.bottle : ""
+      )
     }
   }, [ingredient, open, categories])
 

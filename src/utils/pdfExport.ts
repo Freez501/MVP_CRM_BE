@@ -25,9 +25,7 @@ export async function exportElementToPdf(element: HTMLElement, fileName: string)
     const printableHeightPx = elementWidth * (printableHeightMm / pdfWidthMm)
 
     // Все неделимые блоки с точными координатами через getBoundingClientRect
-    const blocks = Array.from(
-      element.querySelectorAll<HTMLElement>('[data-pdf-block="true"]')
-    )
+    const blocks = Array.from(element.querySelectorAll<HTMLElement>('[data-pdf-block="true"]'))
 
     const splitPositions: number[] = [0]
     let currentY = 0

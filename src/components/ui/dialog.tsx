@@ -58,9 +58,7 @@ export function Dialog({
               {title}
             </h2>
             {description && (
-              <p className="font-montserrat text-xs text-text-secondary mt-0.5">
-                {description}
-              </p>
+              <p className="font-montserrat text-xs text-text-secondary mt-0.5">{description}</p>
             )}
           </div>
           <button

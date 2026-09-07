@@ -11,7 +11,18 @@ interface PrintableSmetaProps {
 }
 
 export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
-  ({ calculation, totalPortions, grandTotalCost, selectedCount, eventName, eventDate, bufferPercent }, ref) => {
+  (
+    {
+      calculation,
+      totalPortions,
+      grandTotalCost,
+      selectedCount,
+      eventName,
+      eventDate,
+      bufferPercent,
+    },
+    ref
+  ) => {
     const formattedDate = eventDate
       ? new Date(eventDate).toLocaleDateString("ru-RU", {
           day: "numeric",
@@ -63,16 +74,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
             >
               {eventName ? eventName : "Смета закупок и ТТК"}
             </h1>
-            <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#555555", fontWeight: "500" }}>
+            <p
+              style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#555555", fontWeight: "500" }}
+            >
               {eventName
                 ? "Смета закупок и ТТК коктейлей · Brilliant Bar Catering"
                 : "CocktailCalc Pro · Brilliant Bar Catering"}
             </p>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#111111" }}>{formattedDate}</p>
-            <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#555555", fontWeight: "500" }}>
-              {totalPortions} порций · {selectedCount} позиций {bufferPercent && bufferPercent > 0 ? `· Запас: +${bufferPercent}%` : ""}
+            <p style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#111111" }}>
+              {formattedDate}
+            </p>
+            <p
+              style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#555555", fontWeight: "500" }}
+            >
+              {totalPortions} порций · {selectedCount} позиций{" "}
+              {bufferPercent && bufferPercent > 0 ? `· Запас: +${bufferPercent}%` : ""}
             </p>
           </div>
         </div>
@@ -94,7 +112,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
           >
             1. Заказ (Коктейли и количество)
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "28px", rowGap: "4px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              columnGap: "28px",
+              rowGap: "4px",
+            }}
+          >
             {calculation.ttkList.map((c: any) => (
               <div
                 key={c.key}
@@ -154,7 +179,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                     marginBottom: "8px",
                   }}
                 >
-                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#000000" }}>{c.name}</span>
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#000000" }}>
+                    {c.name}
+                  </span>
                   <span
                     style={{
                       backgroundColor: "#f3f4f6",
@@ -201,11 +228,22 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                               padding: "1px 0",
                             }}
                           >
-                            <span style={{ color: "#111827", fontWeight: "500", paddingRight: "6px" }}>
+                            <span
+                              style={{ color: "#111827", fontWeight: "500", paddingRight: "6px" }}
+                            >
                               {item.name}
                             </span>
-                            <span style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap", textAlign: "right" }}>
-                              <span style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}>
+                            <span
+                              style={{
+                                color: "#000000",
+                                fontWeight: "700",
+                                whiteSpace: "nowrap",
+                                textAlign: "right",
+                              }}
+                            >
+                              <span
+                                style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}
+                              >
                                 {item.displayFormula} ={" "}
                               </span>
                               {item.displayTotal}
@@ -213,7 +251,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>—</span>
+                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>
+                          —
+                        </span>
                       )}
                     </div>
                   </div>
@@ -246,13 +286,24 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                         c.iceItems.map((item: any, i: number) => (
                           <div
                             key={i}
-                            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: "11px" }}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "baseline",
+                              fontSize: "11px",
+                            }}
                           >
-                            <span style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}>
+                            <span
+                              style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}
+                            >
                               {item.name}
                             </span>
-                            <span style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}>
-                              <span style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}>
+                            <span
+                              style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}
+                            >
+                              <span
+                                style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}
+                              >
                                 {item.displayFormula} ={" "}
                               </span>
                               {item.displayTotal}
@@ -260,7 +311,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>Без льда</span>
+                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>
+                          Без льда
+                        </span>
                       )}
                     </div>
 
@@ -282,13 +335,24 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                         c.decorationItems.map((item: any, i: number) => (
                           <div
                             key={i}
-                            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: "11px" }}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "baseline",
+                              fontSize: "11px",
+                            }}
                           >
-                            <span style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}>
+                            <span
+                              style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}
+                            >
                               {item.name}
                             </span>
-                            <span style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}>
-                              <span style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}>
+                            <span
+                              style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}
+                            >
+                              <span
+                                style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}
+                              >
                                 {item.displayFormula} ={" "}
                               </span>
                               {item.displayTotal}
@@ -296,7 +360,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>Без украшения</span>
+                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>
+                          Без украшения
+                        </span>
                       )}
                     </div>
 
@@ -318,13 +384,24 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                         c.glasswareItems.map((item: any, i: number) => (
                           <div
                             key={i}
-                            style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: "11px" }}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "baseline",
+                              fontSize: "11px",
+                            }}
                           >
-                            <span style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}>
+                            <span
+                              style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}
+                            >
                               {item.name}
                             </span>
-                            <span style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}>
-                              <span style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}>
+                            <span
+                              style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}
+                            >
+                              <span
+                                style={{ color: "#6b7280", fontWeight: "400", fontSize: "10px" }}
+                              >
                                 {item.displayFormula} ={" "}
                               </span>
                               {item.displayTotal}
@@ -332,7 +409,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>Не указана</span>
+                        <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "11px" }}>
+                          Не указана
+                        </span>
                       )}
                     </div>
                   </div>
@@ -383,7 +462,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                       marginBottom: "6px",
                     }}
                   >
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#000000" }}>{pf.name}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#000000" }}>
+                      {pf.name}
+                    </span>
                     <span
                       style={{
                         backgroundColor: "#f3f4f6",
@@ -412,10 +493,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                             padding: "1px 0",
                           }}
                         >
-                          <span style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}>
+                          <span
+                            style={{ color: "#111827", fontWeight: "500", paddingRight: "4px" }}
+                          >
                             {item.name}
                           </span>
-                          <span style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}>
+                          <span
+                            style={{ color: "#000000", fontWeight: "700", whiteSpace: "nowrap" }}
+                          >
                             <span style={{ color: "#6b7280", fontWeight: "400", fontSize: "9px" }}>
                               {item.displayFormula} ={" "}
                             </span>
@@ -424,7 +509,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                         </div>
                       ))
                     ) : (
-                      <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "10px" }}>—</span>
+                      <span style={{ color: "#9ca3af", fontStyle: "italic", fontSize: "10px" }}>
+                        —
+                      </span>
                     )}
                   </div>
                 </div>
@@ -531,12 +618,38 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
             <tbody>
               {/* Алкоголь */}
               {calculation.categorized.alcohol.map((a: any) => (
-                <tr key={a.name} data-pdf-block="true" style={{ borderBottom: "1px solid #e5e7eb" }}>
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                <tr
+                  key={a.name}
+                  data-pdf-block="true"
+                  style={{ borderBottom: "1px solid #e5e7eb" }}
+                >
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {a.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>Алкоголь</td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Алкоголь
+                  </td>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {a.amount.toFixed(3)} л
                   </td>
                   <td
@@ -567,16 +680,43 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               {/* Безалкогольное */}
               {calculation.categorized.non_alcohol.map((na: any) => (
                 <tr key={na.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {na.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Безалкогольное
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {na.amount.toFixed(3)} л
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -596,11 +736,33 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               {/* Сиропы и пюре */}
               {calculation.categorized.syrups.map((s: any) => (
                 <tr key={s.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {s.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>Сироп</td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Сироп
+                  </td>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {s.amount.toFixed(3)} л
                   </td>
                   <td
@@ -629,14 +791,43 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               ))}
               {calculation.categorized.puree.map((p: any) => (
                 <tr key={p.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {p.name} (пюре)
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>Пюре</td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Пюре
+                  </td>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {p.amount.toFixed(3)} л
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -654,14 +845,43 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               ))}
               {calculation.categorized.concentrate.map((c: any) => (
                 <tr key={c.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {c.name} (концентрат)
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>Концентрат</td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Концентрат
+                  </td>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {c.amount.toFixed(3)} л
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -681,10 +901,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               {/* Лёд */}
               {calculation.categorized.ice_cube.map((ic: any) => (
                 <tr key={ic.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {ic.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Лёд кубиковый
                   </td>
                   <td
@@ -698,7 +931,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {ic.amount} кг
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -716,10 +956,25 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               ))}
               {calculation.categorized.ice_figurine.map((ifig: any) => (
                 <tr key={ifig.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {ifig.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>Лёд фигурный</td>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Лёд фигурный
+                  </td>
                   <td
                     style={{
                       padding: "4px 0",
@@ -731,7 +986,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {ifig.amount} шт
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -751,10 +1013,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               {/* Украшения */}
               {calculation.categorized.decorations_pcs.map((dp: any) => (
                 <tr key={dp.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {dp.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Украшение (шт)
                   </td>
                   <td
@@ -768,7 +1043,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {dp.amount} шт
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -786,10 +1068,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               ))}
               {calculation.categorized.decorations_gr.map((dg: any) => (
                 <tr key={dg.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {dg.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Украшение (г)
                   </td>
                   <td
@@ -803,7 +1098,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {dg.displayWeight}
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -821,10 +1123,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               ))}
               {calculation.categorized.dry_gr.map((d: any) => (
                 <tr key={d.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {d.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Сыпучка / Специи
                   </td>
                   <td
@@ -838,7 +1153,14 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {d.displayWeight}
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                   <td
@@ -858,10 +1180,23 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
               {/* Посуда */}
               {calculation.categorized.glassware.map((g: any) => (
                 <tr key={g.name} data-pdf-block="true">
-                  <td style={{ padding: "4px 0", fontWeight: "500", color: "#111111", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      fontWeight: "500",
+                      color: "#111111",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     {g.name}
                   </td>
-                  <td style={{ padding: "4px 0", color: "#4b5563", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      color: "#4b5563",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     Посуда / Бокалы
                   </td>
                   <td
@@ -875,10 +1210,24 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
                   >
                     {g.count} шт
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
-                  <td style={{ padding: "4px 0", textAlign: "right", color: "#9ca3af", borderBottom: "1px solid #e5e7eb" }}>
+                  <td
+                    style={{
+                      padding: "4px 0",
+                      textAlign: "right",
+                      color: "#9ca3af",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
                     —
                   </td>
                 </tr>
@@ -901,7 +1250,9 @@ export const PrintableSmeta = forwardRef<HTMLDivElement, PrintableSmetaProps>(
           }}
         >
           <span style={{ textTransform: "uppercase", color: "#111111" }}>ИТОГО К ЗАКУПКЕ:</span>
-          <span style={{ fontSize: "17px", color: "#000000" }}>{grandTotalCost.toLocaleString()} ₽</span>
+          <span style={{ fontSize: "17px", color: "#000000" }}>
+            {grandTotalCost.toLocaleString()} ₽
+          </span>
         </div>
       </div>
     )

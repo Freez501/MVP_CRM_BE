@@ -57,7 +57,9 @@ export function EventCard({ event, onChangeStage, onPrint }: EventCardProps) {
         </div>
       </div>
       <div className="flex items-center justify-between mb-3">
-        <span className="font-montserrat font-semibold text-text-primary">{event.value.toLocaleString()} ₽</span>
+        <span className="font-montserrat font-semibold text-text-primary">
+          {event.value.toLocaleString()} ₽
+        </span>
         <Badge variant={stageVariant[event.stage]}>{stageLabel[event.stage]}</Badge>
       </div>
       {onChangeStage && (

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import path from "path"
 import fs from "fs"
 import react from "@vitejs/plugin-react"
@@ -21,10 +22,15 @@ function localDbSyncPlugin(): Plugin {
               res.statusCode = 200
               res.setHeader("Content-Type", "application/json")
               res.end(JSON.stringify({ success: true }))
-            } catch (err: any) {
+            } catch (err) {
               res.statusCode = 500
               res.setHeader("Content-Type", "application/json")
-              res.end(JSON.stringify({ success: false, error: err?.message || "Unknown error" }))
+              res.end(
+                JSON.stringify({
+                  success: false,
+                  error: err instanceof Error ? err.message : "Unknown error",
+                })
+              )
             }
           })
           return
@@ -36,10 +42,15 @@ function localDbSyncPlugin(): Plugin {
             res.statusCode = 200
             res.setHeader("Content-Type", "application/json")
             res.end(content)
-          } catch (err: any) {
+          } catch (err) {
             res.statusCode = 500
             res.setHeader("Content-Type", "application/json")
-            res.end(JSON.stringify({ success: false, error: err?.message || "Unknown error" }))
+            res.end(
+              JSON.stringify({
+                success: false,
+                error: err instanceof Error ? err.message : "Unknown error",
+              })
+            )
           }
           return
         }
@@ -62,6 +73,10 @@ export default defineConfig({
       ignored: ["**/src/data/cocktails_db.json"],
     },
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.ts",
+    css: true,
+  },
 })
-
-

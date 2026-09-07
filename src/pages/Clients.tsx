@@ -52,7 +52,8 @@ export default function Clients() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <p className="font-cormorant italic text-[22px] text-text-secondary">
-          {filtered.length} {filtered.length === 1 ? "заказчик" : filtered.length < 5 ? "заказчика" : "заказчиков"}
+          {filtered.length}{" "}
+          {filtered.length === 1 ? "заказчик" : filtered.length < 5 ? "заказчика" : "заказчиков"}
         </p>
         <Button variant="primary" onClick={() => setIsAddOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -162,11 +163,7 @@ export default function Clients() {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setIsAddOpen(false)}
-            >
+            <Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>
               Отмена
             </Button>
             <Button type="submit" variant="primary">
