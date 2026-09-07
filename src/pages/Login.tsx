@@ -6,17 +6,24 @@ import { Button } from "@/components/ui/button"
 import { UserRole } from "@/types"
 
 export default function Login() {
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [email, setEmail] = useState("")
+  const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const inviteEmail = searchParams.get("email") || ""
+  const inviteRole = (searchParams.get("role") as UserRole) || "staff"
+  const inviteToken = searchParams.get("invite") || ""
+  const isInvite = Boolean(inviteToken || inviteEmail)
+
+  const [isSignUp, setIsSignUp] = useState(isInvite)
+  const [email, setEmail] = useState(inviteEmail)
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<UserRole>("staff")
+  const [name, setName] = useState(searchParams.get("name") || "")
+  const [role, setRole] = useState<UserRole>(inviteRole)
   const [error, setError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { signIn, signUp, loginAsDemo } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/"
 
@@ -38,7 +45,7 @@ export default function Login() {
     setIsSubmitting(true)
     try {
       if (isSignUp) {
-        const res = await signUp(email, password, role)
+        const res = await signUp(email, password, role, name)
         if (res.error) {
           setError(res.error)
         } else if (res.requiresEmailConfirmation) {
@@ -66,6 +73,12 @@ export default function Login() {
     navigate(from, { replace: true })
   }
 
+  const roleLabels: Record<UserRole, string> = {
+    admin: "Владелец",
+    partner: "Партнёр",
+    staff: "Заготовщик",
+  }
+
   return (
     <div className="min-h-screen bg-bg-app flex items-center justify-center p-4 relative overflow-hidden">
       {/* Атмосферные градиентные пятна на фоне */}
@@ -85,6 +98,19 @@ export default function Login() {
             Облачная экосистема & База данных
           </p>
         </div>
+
+        {/* Баннер персонального приглашения */}
+        {isInvite && (
+          <div className="bg-brand/10 border border-brand/30 rounded-xl p-3 mb-5 flex items-center gap-2.5 text-xs font-montserrat text-brand">
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <div>
+              <span className="font-semibold block">Приглашение в команду</span>
+              <span className="text-text-secondary text-[11px]">
+                Вам назначена роль: <strong className="text-brand">{roleLabels[role] || role}</strong>. Задайте пароль для входа.
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Переключатель Вход / Регистрация */}
         <div className="flex bg-bg-app border border-border rounded-xl p-1 mb-6">
@@ -134,6 +160,21 @@ export default function Login() {
 
         {/* Форма */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div>
+              <label className="block font-montserrat text-xs text-text-secondary mb-1.5 font-medium">
+                Ваше имя / ФИО
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Иван Петров"
+                className="w-full bg-bg-app border border-border rounded-xl px-3.5 py-2.5 text-sm font-montserrat text-text-primary placeholder:text-text-tertiary/60 focus:outline-none focus:border-brand transition-colors"
+              />
+            </div>
+          )}
+
           <div>
             <label className="block font-montserrat text-xs text-text-secondary mb-1.5 font-medium">
               Электронная почта

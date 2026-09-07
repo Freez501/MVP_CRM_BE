@@ -18,6 +18,8 @@ const Clients = lazy(() => import("./pages/Clients"))
 const Calculator = lazy(() => import("./pages/Calculator"))
 const Database = lazy(() => import("./pages/Database"))
 const Settings = lazy(() => import("./pages/Settings"))
+const Team = lazy(() => import("./pages/Team"))
+const Profile = lazy(() => import("./pages/Profile"))
 const Login = lazy(() => import("./pages/Login"))
 
 export default function App() {
@@ -52,49 +54,91 @@ export default function App() {
                                   <Route
                                     path="/"
                                     element={
-                                      <ErrorBoundary>
-                                        <Dashboard />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner"]}>
+                                        <ErrorBoundary>
+                                          <Dashboard />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
+                                    }
+                                  />
+                                  <Route
+                                    path="/dashboard"
+                                    element={
+                                      <ProtectedRoute allowedRoles={["admin", "partner"]}>
+                                        <ErrorBoundary>
+                                          <Dashboard />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                   <Route
                                     path="/events"
                                     element={
-                                      <ErrorBoundary>
-                                        <Events />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner"]}>
+                                        <ErrorBoundary>
+                                          <Events />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                   <Route
                                     path="/clients"
                                     element={
-                                      <ErrorBoundary>
-                                        <Clients />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner"]}>
+                                        <ErrorBoundary>
+                                          <Clients />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                   <Route
                                     path="/calculator"
                                     element={
-                                      <ErrorBoundary>
-                                        <Calculator />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner", "staff"]}>
+                                        <ErrorBoundary>
+                                          <Calculator />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                   <Route
                                     path="/database"
                                     element={
-                                      <ErrorBoundary>
-                                        <Database />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner", "staff"]}>
+                                        <ErrorBoundary>
+                                          <Database />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
+                                    }
+                                  />
+                                  <Route
+                                    path="/team"
+                                    element={
+                                      <ProtectedRoute allowedRoles={["admin"]}>
+                                        <ErrorBoundary>
+                                          <Team />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                   <Route
                                     path="/settings"
                                     element={
-                                      <ErrorBoundary>
-                                        <Settings />
-                                      </ErrorBoundary>
+                                      <ProtectedRoute allowedRoles={["admin", "partner"]}>
+                                        <ErrorBoundary>
+                                          <Settings />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
+                                    }
+                                  />
+                                  <Route
+                                    path="/profile"
+                                    element={
+                                      <ProtectedRoute allowedRoles={["admin", "partner", "staff"]}>
+                                        <ErrorBoundary>
+                                          <Profile />
+                                        </ErrorBoundary>
+                                      </ProtectedRoute>
                                     }
                                   />
                                 </Routes>

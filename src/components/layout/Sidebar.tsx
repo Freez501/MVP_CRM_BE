@@ -6,25 +6,80 @@ import {
   Users,
   Calculator,
   Database,
+  UserCheck,
   Settings,
   LogOut,
+  Wine,
+  GlassWater,
+  Coffee,
+  Flame,
+  Sparkles,
+  Crown,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
+import { UserRole } from "@/types"
 
-const navItems = [
-  { to: "/", label: "Дашборд", icon: LayoutDashboard },
-  { to: "/events", label: "Мероприятия", icon: CalendarDays },
-  { to: "/clients", label: "Заказчики", icon: Users },
-  { to: "/calculator", label: "Калькулятор", icon: Calculator },
-  { to: "/database", label: "База", icon: Database },
-  { to: "/settings", label: "Настройки", icon: Settings },
+interface NavItem {
+  to: string
+  label: string
+  icon: typeof LayoutDashboard
+  allowedRoles: UserRole[]
+}
+
+const PRESET_ICONS: Record<string, typeof Wine> = {
+  wine: Wine,
+  cocktail: GlassWater,
+  coffee: Coffee,
+  fire: Flame,
+  sparkle: Sparkles,
+  crown: Crown,
+}
+
+const allNavItems: NavItem[] = [
+  { to: "/", label: "Дашборд", icon: LayoutDashboard, allowedRoles: ["admin", "partner"] },
+  { to: "/events", label: "Мероприятия", icon: CalendarDays, allowedRoles: ["admin", "partner"] },
+  { to: "/clients", label: "Заказчики", icon: Users, allowedRoles: ["admin", "partner"] },
+  { to: "/calculator", label: "Калькулятор", icon: Calculator, allowedRoles: ["admin", "partner", "staff"] },
+  { to: "/database", label: "База", icon: Database, allowedRoles: ["admin", "partner", "staff"] },
+  { to: "/team", label: "Команда", icon: UserCheck, allowedRoles: ["admin"] },
+  { to: "/settings", label: "Настройки", icon: Settings, allowedRoles: ["admin", "partner"] },
 ]
 
 export function Sidebar() {
-  const { user, profile, role, signOut } = useAuth()
+  const { user, profile, role, name, avatarUrl, signOut } = useAuth()
   const displayEmail = user?.email || "user@brilliant-bar.ru"
+  const displayName = name || profile?.name || displayEmail.split("@")[0]
   const roleName =
-    role === "admin" ? "Администратор" : role === "partner" ? "Партнёр" : "Заготовщик"
+    role === "admin" ? "Владелец" : role === "partner" ? "Партнёр" : "Заготовщик"
+
+  const navItems = allNavItems.filter((item) => item.allowedRoles.includes(role))
+
+  const renderSidebarAvatar = () => {
+    if (avatarUrl?.startsWith("http")) {
+      return (
+        <img
+          src={avatarUrl}
+          alt={displayName}
+          className="w-8 h-8 rounded-full object-cover border border-brand/50 shrink-0"
+        />
+      )
+    }
+
+    if (avatarUrl && PRESET_ICONS[avatarUrl]) {
+      const Icon = PRESET_ICONS[avatarUrl]
+      return (
+        <div className="w-8 h-8 shrink-0 rounded-full bg-brand/20 text-brand border border-brand/40 flex items-center justify-center">
+          <Icon className="w-4 h-4" />
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-8 h-8 shrink-0 rounded-full bg-brand text-bg-app flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
+        {displayName.slice(0, 2).toUpperCase()}
+      </div>
+    )
+  }
 
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-bg-sidebar border-r border-border hidden lg:flex flex-col">
@@ -58,20 +113,26 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="px-4 py-3.5 border-t border-border flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="w-8 h-8 shrink-0 rounded-full bg-brand text-bg-app flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
-            {role.slice(0, 2).toUpperCase()}
-          </div>
+        <NavLink
+          to="/profile"
+          title="Открыть мой профиль"
+          className={({ isActive }) =>
+            `flex items-center gap-2.5 overflow-hidden flex-1 p-1.5 -ml-1.5 rounded-xl transition-colors group ${
+              isActive ? "bg-surface-secondary/60" : "hover:bg-surface-secondary/40"
+            }`
+          }
+        >
+          {renderSidebarAvatar()}
           <div className="truncate">
             <span
-              className="block font-montserrat text-xs text-text-primary font-medium truncate"
-              title={displayEmail}
+              className="block font-montserrat text-xs text-text-primary font-medium truncate group-hover:text-brand transition-colors"
+              title={displayName}
             >
-              {profile?.name || displayEmail.split("@")[0]}
+              {displayName}
             </span>
             <span className="block font-montserrat text-[10px] text-text-tertiary">{roleName}</span>
           </div>
-        </div>
+        </NavLink>
         <button
           onClick={() => signOut()}
           title="Выйти из системы"

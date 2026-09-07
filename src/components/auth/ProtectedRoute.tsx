@@ -28,14 +28,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6">
-        <h2 className="text-2xl font-cormorant italic text-text-primary mb-2">Доступ ограничен</h2>
-        <p className="text-sm font-montserrat text-text-secondary max-w-md">
-          Ваша текущая роль ({role}) не имеет прав для просмотра данного раздела.
-        </p>
-      </div>
-    )
+    const fallbackPath = role === "staff" ? "/calculator" : "/"
+    return <Navigate to={fallbackPath} replace />
   }
 
   return <>{children}</>

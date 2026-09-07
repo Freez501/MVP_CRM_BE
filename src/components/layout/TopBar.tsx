@@ -1,18 +1,62 @@
-import { Bell, Menu, Search } from "lucide-react"
-import { useLocation } from "react-router-dom"
+import { Bell, Menu, Search, Wine, GlassWater, Coffee, Flame, Sparkles, Crown } from "lucide-react"
+import { useLocation, Link } from "react-router-dom"
+import { useAuth } from "@/context/AuthContext"
 
 const titles: Record<string, string> = {
   "/": "Дашборд",
+  "/dashboard": "Дашборд",
   "/events": "Мероприятия",
   "/clients": "Заказчики",
   "/calculator": "Калькулятор",
   "/database": "База",
+  "/team": "Команда",
   "/settings": "Настройки",
+  "/profile": "Мой профиль",
+}
+
+const PRESET_ICONS: Record<string, typeof Wine> = {
+  wine: Wine,
+  cocktail: GlassWater,
+  coffee: Coffee,
+  fire: Flame,
+  sparkle: Sparkles,
+  crown: Crown,
 }
 
 export function TopBar() {
   const location = useLocation()
   const title = titles[location.pathname] ?? "Dashboard"
+  const { user, name, avatarUrl } = useAuth()
+
+  const displayName = name || user?.email?.split("@")[0] || "U"
+  const initials = displayName.slice(0, 2).toUpperCase()
+
+  const renderAvatar = () => {
+    if (avatarUrl?.startsWith("http")) {
+      return (
+        <img
+          src={avatarUrl}
+          alt={displayName}
+          className="w-8 h-8 rounded-full object-cover border border-brand/50"
+        />
+      )
+    }
+
+    if (avatarUrl && PRESET_ICONS[avatarUrl]) {
+      const Icon = PRESET_ICONS[avatarUrl]
+      return (
+        <div className="w-8 h-8 rounded-full bg-brand/20 text-brand border border-brand/40 flex items-center justify-center">
+          <Icon className="w-4 h-4" />
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-8 h-8 rounded-full bg-brand text-text-inverse flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
+        {initials}
+      </div>
+    )
+  }
 
   return (
     <header className="h-16 bg-bg-card border-b border-border flex items-center justify-between px-6 sticky top-0 z-40">
@@ -38,9 +82,13 @@ export function TopBar() {
         <button className="text-text-tertiary hover:text-text-primary transition-colors relative p-2 rounded-full hover:bg-surface-secondary/20">
           <Bell className="w-4 h-4" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-brand text-text-inverse flex items-center justify-center text-xs font-semibold font-tenor tracking-wider">
-          BE
-        </div>
+        <Link
+          to="/profile"
+          title={`Мой профиль (${displayName})`}
+          className="hover:scale-105 transition-transform"
+        >
+          {renderAvatar()}
+        </Link>
       </div>
     </header>
   )

@@ -60,5 +60,21 @@ export interface UserProfile {
   email: string
   role: UserRole
   name?: string
+  avatarUrl?: string
+  phone?: string
+  position?: string
   createdAt?: string
 }
+
+export interface TeamInvite {
+  id: string
+  email: string
+  role: UserRole
+  name?: string
+  position?: string
+  token: string
+  createdAt: string
+  expiresAt?: string
+  status: "pending" | "accepted" | "revoked"
+}
+

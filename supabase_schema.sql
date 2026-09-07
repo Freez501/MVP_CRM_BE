@@ -27,6 +27,9 @@ create table if not exists public.profiles (
   email text not null,
   role user_role not null default 'staff',
   name text,
+  position text,
+  phone text,
+  avatar_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -35,12 +38,13 @@ create table if not exists public.profiles (
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, role, name)
+  insert into public.profiles (id, email, role, name, position)
   values (
     new.id,
     new.email,
     coalesce((new.raw_user_meta_data->>'role')::user_role, 'staff'::user_role),
-    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1))
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    new.raw_user_meta_data->>'position'
   )
   on conflict (id) do update set
     email = excluded.email,
@@ -240,6 +244,30 @@ create policy "Allow admin and staff modify categories"
   on public.categories for all
   using (public.get_current_role() in ('admin', 'staff'));
 
+-- 11. Таблица персональных приглашений (Invites)
+create table if not exists public.invites (
+  id text primary key,
+  email text not null,
+  role user_role not null default 'staff',
+  name text,
+  position text,
+  token text not null unique,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default (now() + interval '14 days'),
+  created_by uuid references auth.users(id) on delete set null,
+  status text not null default 'pending'
+);
+
+alter table public.invites enable row level security;
+
+create policy "Allow admin manage invites"
+  on public.invites for all
+  using (public.get_current_role() = 'admin');
+
+create policy "Allow read invite by anyone"
+  on public.invites for select
+  using (true);
+
 -- ==============================================================================
 -- REALTIME SUBSCRIPTIONS
 -- ==============================================================================
@@ -250,3 +278,4 @@ alter publication supabase_realtime add table public.activities;
 alter publication supabase_realtime add table public.cocktails;
 alter publication supabase_realtime add table public.ingredients;
 alter publication supabase_realtime add table public.semi_products;
+
