@@ -2,7 +2,7 @@ import { useState, FormEvent } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import logoImg from "@/assets/logo.png"
-import { Lock, Mail, UserCheck, Sparkles, Shield, ArrowRight } from "lucide-react"
+import { Lock, Mail, Sparkles, ArrowRight, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UserRole } from "@/types"
 
@@ -18,12 +18,13 @@ export default function Login() {
   const [email, setEmail] = useState(inviteEmail)
   const [password, setPassword] = useState("")
   const [name, setName] = useState(searchParams.get("name") || "")
-  const [role, setRole] = useState<UserRole>(inviteRole)
+  const [companyName, setCompanyName] = useState("")
+  const role = inviteRole
   const [error, setError] = useState<string | null>(null)
   const [infoMessage, setInfoMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { signIn, signUp, loginAsDemo } = useAuth()
+  const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/"
@@ -43,10 +44,21 @@ export default function Login() {
       return
     }
 
+    if (isSignUp && !isInvite && !companyName.trim()) {
+      setError("Пожалуйста, укажите название вашей компании")
+      return
+    }
+
     setIsSubmitting(true)
     try {
       if (isSignUp) {
-        const res = await signUp(email, password, role, name)
+        const res = await signUp(
+          email,
+          password,
+          isInvite ? role : "admin",
+          name,
+          isInvite ? undefined : companyName.trim()
+        )
         if (res.error) {
           setError(res.error)
         } else if (res.requiresEmailConfirmation) {
@@ -69,11 +81,6 @@ export default function Login() {
     }
   }
 
-  const handleDemoLogin = (selectedRole: UserRole = "admin") => {
-    loginAsDemo(selectedRole)
-    navigate(from, { replace: true })
-  }
-
   const roleLabels: Record<UserRole, string> = {
     admin: "Владелец",
     partner: "Партнёр",
@@ -87,17 +94,14 @@ export default function Login() {
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md bg-bg-card/90 border border-border-sketch backdrop-blur-xl rounded-2xl shadow-2xl p-6 sm:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-300">
-        {/* Логотип и заголовок */}
+        {/* Логотип и подпись */}
         <div className="text-center mb-6">
           <img
             src={logoImg}
             alt="Brilliant Event"
-            className="h-14 w-auto mx-auto object-contain mb-2"
+            className="w-full max-w-[280px] h-auto mx-auto object-contain mb-3"
           />
-          <h1 className="font-cormorant italic text-3xl sm:text-4xl text-text-primary">
-            Brilliant Bar CRM
-          </h1>
-          <p className="font-montserrat text-xs text-text-tertiary mt-1 tracking-wider uppercase">
+          <p className="font-montserrat text-xs text-text-tertiary tracking-wider uppercase">
             Облачная экосистема & База данных
           </p>
         </div>
@@ -178,6 +182,25 @@ export default function Login() {
             </div>
           )}
 
+          {isSignUp && !isInvite && (
+            <div>
+              <label className="block font-montserrat text-xs text-text-secondary mb-1.5 font-medium">
+                Название компании <span className="text-brand">*</span>
+              </label>
+              <div className="relative">
+                <Building2 className="w-4 h-4 text-text-tertiary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Например, Brilliant Bar"
+                  className="w-full bg-bg-app border border-border rounded-xl pl-10 pr-3.5 py-2.5 text-sm font-montserrat text-text-primary placeholder:text-text-tertiary/60 focus:outline-none focus:border-brand transition-colors"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block font-montserrat text-xs text-text-secondary mb-1.5 font-medium">
               Электронная почта
@@ -212,48 +235,7 @@ export default function Login() {
             </div>
           </div>
 
-          {isSignUp && (
-            <div>
-              <label className="block font-montserrat text-xs text-text-secondary mb-1.5 font-medium">
-                Роль в команде
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRole("staff")}
-                  className={`p-2 rounded-lg border text-xs font-montserrat text-center transition-all ${
-                    role === "staff"
-                      ? "border-brand bg-brand/10 text-brand font-semibold"
-                      : "border-border text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Заготовщик
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("partner")}
-                  className={`p-2 rounded-lg border text-xs font-montserrat text-center transition-all ${
-                    role === "partner"
-                      ? "border-brand bg-brand/10 text-brand font-semibold"
-                      : "border-border text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Партнёр
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("admin")}
-                  className={`p-2 rounded-lg border text-xs font-montserrat text-center transition-all ${
-                    role === "admin"
-                      ? "border-brand bg-brand/10 text-brand font-semibold"
-                      : "border-border text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  Админ
-                </button>
-              </div>
-            </div>
-          )}
+
 
           <Button
             type="submit"
@@ -271,43 +253,6 @@ export default function Login() {
             )}
           </Button>
         </form>
-
-        {/* Разделитель */}
-        <div className="relative my-6 text-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <span className="relative bg-bg-card px-3 font-montserrat text-[11px] text-text-tertiary uppercase tracking-wider">
-            Быстрый доступ
-          </span>
-        </div>
-
-        {/* Быстрый вход в демо */}
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => handleDemoLogin("admin")}
-            className="w-full py-2.5 px-3 bg-bg-app hover:bg-surface-secondary/50 border border-border rounded-xl text-xs font-montserrat text-text-secondary hover:text-text-primary transition-all flex items-center justify-between group"
-          >
-            <span className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span>Войти как Администратор (Демо)</span>
-            </span>
-            <Sparkles className="w-3.5 h-3.5 text-brand" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDemoLogin("staff")}
-            className="w-full py-2 px-3 bg-bg-app/50 hover:bg-surface-secondary/40 border border-border/70 rounded-xl text-[11px] font-montserrat text-text-tertiary hover:text-text-secondary transition-all flex items-center justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Войти как Заготовщик (Staff)</span>
-            </span>
-            <span className="text-[10px] text-text-tertiary">Ограниченный доступ</span>
-          </button>
-        </div>
       </div>
     </div>
   )

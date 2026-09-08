@@ -27,6 +27,8 @@ create table if not exists public.companies (
   name text not null,
   logo_url text,
   default_currency text not null default 'RUB',
+  status text not null default 'trial', -- 'trial' | 'active' | 'blocked'
+  trial_ends_at timestamptz not null default (now() + interval '7 days'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -345,3 +347,35 @@ alter publication supabase_realtime add table public.activities;
 alter publication supabase_realtime add table public.cocktails;
 alter publication supabase_realtime add table public.ingredients;
 alter publication supabase_realtime add table public.semi_products;
+
+-- ==============================================================================
+-- SELF-SERVE ONBOARDING TRIGGER (Создание компании и профиля при регистрации)
+-- ==============================================================================
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+  new_company_id uuid;
+  company_title text;
+  user_name text;
+begin
+  company_title := coalesce(new.raw_user_meta_data->>'company_name', 'Моя Компания');
+  user_name := coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1));
+
+  -- 1. Создаем компанию с 7-дневным триалом
+  insert into public.companies (name, status, trial_ends_at)
+  values (company_title, 'trial', now() + interval '7 days')
+  returning id into new_company_id;
+
+  -- 2. Создаем профиль пользователя с ролью admin
+  insert into public.profiles (id, email, role, name, company_id)
+  values (new.id, new.email, 'admin', user_name, new_company_id);
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+

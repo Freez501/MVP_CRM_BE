@@ -6,6 +6,8 @@ import { Company } from "@/types"
 interface CompanyContextType {
   company: Company | null
   isLoading: boolean
+  isTrialExpired: boolean
+  trialDaysLeft: number
   updateCompany: (updates: Partial<Company>) => Promise<{ error: string | null }>
   refreshCompany: () => Promise<void>
 }
@@ -16,6 +18,8 @@ const DEFAULT_COMPANY: Company = {
   id: "demo-company-id",
   name: "Brilliant Event",
   defaultCurrency: "RUB",
+  status: "trial",
+  trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 }
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
@@ -38,6 +42,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         id: "demo-company-id",
         name: "Brilliant Event",
         defaultCurrency: "RUB",
+        status: "trial",
+        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       }
       setCompany((prev) => prev || demoComp)
       setIsLoading(false)
@@ -68,6 +74,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           name: data.name || "Brilliant Event",
           logoUrl: data.logo_url || undefined,
           defaultCurrency: data.default_currency || "RUB",
+          status: (data.status as "trial" | "active" | "blocked") || "trial",
+          trial_ends_at:
+            data.trial_ends_at ||
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         }
         setCompany(loaded)
         localStorage.setItem(cacheKey, JSON.stringify(loaded))
@@ -83,6 +93,23 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchCompany()
   }, [fetchCompany])
+
+  const isTrialExpired = Boolean(
+    company &&
+      (company.status === "blocked" ||
+        (company.status === "trial" &&
+          company.trial_ends_at &&
+          new Date() > new Date(company.trial_ends_at)))
+  )
+
+  const trialDaysLeft = company?.trial_ends_at
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(company.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        )
+      )
+    : 7
 
   const updateCompany = async (updates: Partial<Company>): Promise<{ error: string | null }> => {
     if (!company) {
@@ -114,6 +141,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         if (updates.name !== undefined) dbPayload.name = updates.name.trim()
         if (updates.defaultCurrency !== undefined) dbPayload.default_currency = updates.defaultCurrency
         if (updates.logoUrl !== undefined) dbPayload.logo_url = updates.logoUrl
+        if (updates.status !== undefined) dbPayload.status = updates.status
+        if (updates.trial_ends_at !== undefined) dbPayload.trial_ends_at = updates.trial_ends_at
 
         const { error } = await supabase
           .from("companies")
@@ -139,6 +168,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       value={{
         company,
         isLoading,
+        isTrialExpired,
+        trialDaysLeft,
         updateCompany,
         refreshCompany: fetchCompany,
       }}

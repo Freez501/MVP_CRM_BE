@@ -17,6 +17,7 @@ import {
   Crown,
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
+import { useCompany } from "@/context/CompanyContext"
 import { UserRole } from "@/types"
 
 interface NavItem {
@@ -47,6 +48,7 @@ const allNavItems: NavItem[] = [
 
 export function Sidebar() {
   const { user, profile, role, name, avatarUrl, signOut } = useAuth()
+  const { company, trialDaysLeft } = useCompany()
   const displayEmail = user?.email || "user@brilliant-bar.ru"
   const displayName = name || profile?.name || displayEmail.split("@")[0]
   const roleName =
@@ -110,6 +112,28 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      {company?.status === "trial" && (
+        <div className="mx-3 mb-2 p-2.5 rounded-xl bg-gradient-to-r from-brand/15 to-amber-500/10 border border-brand/30 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 text-brand shrink-0" />
+            <div className="truncate">
+              <span className="block font-montserrat text-[11px] font-semibold text-text-primary leading-tight">
+                Пробный период
+              </span>
+              <span className="block font-montserrat text-[10px] text-brand font-medium leading-tight">
+                {trialDaysLeft === 1
+                  ? "Остался 1 день"
+                  : trialDaysLeft >= 2 && trialDaysLeft <= 4
+                  ? `Осталось ${trialDaysLeft} дня`
+                  : `Осталось ${trialDaysLeft} дней`}
+              </span>
+            </div>
+          </div>
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold font-montserrat bg-brand/20 text-brand border border-brand/40 uppercase shrink-0">
+            Триал
+          </span>
+        </div>
+      )}
       <div className="px-4 py-3.5 border-t border-border flex items-center justify-between gap-2">
         <NavLink
           to="/profile"

@@ -61,6 +61,8 @@ export interface Company {
   name: string
   logoUrl?: string
   defaultCurrency: string
+  status: "trial" | "active" | "blocked"
+  trial_ends_at: string
 }
 
 export interface UserProfile {

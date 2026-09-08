@@ -23,6 +23,7 @@ const Settings = lazy(() => import("./pages/Settings"))
 const Team = lazy(() => import("./pages/Team"))
 const Profile = lazy(() => import("./pages/Profile"))
 const Login = lazy(() => import("./pages/Login"))
+const Paywall = lazy(() => import("./pages/Paywall"))
 
 export default function App() {
   return (
@@ -44,8 +45,9 @@ export default function App() {
                       }
                     >
                       <Routes>
-                        {/* Публичный роут авторизации */}
+                        {/* Публичные роуты */}
                         <Route path="/login" element={<Login />} />
+                        <Route path="/paywall" element={<Paywall />} />
 
                         {/* Защищённые роуты CRM */}
                         <Route

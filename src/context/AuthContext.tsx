@@ -16,7 +16,8 @@ interface AuthContextType {
     email: string,
     password: string,
     role?: UserRole,
-    name?: string
+    name?: string,
+    companyName?: string
   ) => Promise<{ error: string | null; requiresEmailConfirmation?: boolean }>
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
@@ -228,19 +229,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     role: UserRole = "staff",
-    name?: string
+    name?: string,
+    companyName?: string
   ) => {
     try {
       localStorage.removeItem(DEMO_USER_KEY)
       const displayName = name || email.split("@")[0]
+      const metadata: Record<string, unknown> = {
+        role,
+        name: displayName,
+      }
+      if (companyName && companyName.trim()) {
+        metadata.company_name = companyName.trim()
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            role,
-            name: displayName,
-          },
+          data: metadata,
         },
       })
 
