@@ -12,6 +12,8 @@ import { CocktailsProvider } from "./context/CocktailsContext"
 import { ClientsProvider } from "./context/ClientsContext"
 import { EventsProvider } from "./context/EventsContext"
 
+import { CompanyProvider } from "./context/CompanyContext"
+
 const Dashboard = lazy(() => import("./pages/Dashboard"))
 const Events = lazy(() => import("./pages/Events"))
 const Clients = lazy(() => import("./pages/Clients"))
@@ -25,13 +27,14 @@ const Login = lazy(() => import("./pages/Login"))
 export default function App() {
   return (
     <AuthProvider>
-      <ActivitiesProvider>
-        <CategoriesProvider>
-          <IngredientsProvider>
-            <SemiProductsProvider>
-              <CocktailsProvider>
-                <ClientsProvider>
-                  <EventsProvider>
+      <CompanyProvider>
+        <ActivitiesProvider>
+          <CategoriesProvider>
+            <IngredientsProvider>
+              <SemiProductsProvider>
+                <CocktailsProvider>
+                  <ClientsProvider>
+                    <EventsProvider>
                     <Suspense
                       fallback={
                         <div className="min-h-screen bg-bg-app flex items-center justify-center">
@@ -151,10 +154,11 @@ export default function App() {
                   </EventsProvider>
                 </ClientsProvider>
               </CocktailsProvider>
-            </SemiProductsProvider>
-          </IngredientsProvider>
-        </CategoriesProvider>
-      </ActivitiesProvider>
+              </SemiProductsProvider>
+            </IngredientsProvider>
+          </CategoriesProvider>
+        </ActivitiesProvider>
+      </CompanyProvider>
     </AuthProvider>
   )
 }

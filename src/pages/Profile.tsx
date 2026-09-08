@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from "react"
 import { useAuth } from "@/context/AuthContext"
+import { useCompany } from "@/context/CompanyContext"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { UserRole } from "@/types"
@@ -25,6 +26,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Building2,
 } from "lucide-react"
 
 // Набор фирменных барных иконок для быстрого выбора аватара
@@ -39,6 +41,7 @@ const PRESET_AVATARS = [
 
 export default function Profile() {
   const { user, profile, role, name, avatarUrl, updateProfile, signOut } = useAuth()
+  const { company } = useCompany()
 
   // Форма личных данных
   const [displayName, setDisplayName] = useState(name || profile?.name || "")
@@ -250,8 +253,14 @@ export default function Profile() {
                   </>
                 )}
               </p>
-              <div className="mt-2.5 flex items-center gap-2">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {getRoleBadge(role)}
+                {company?.name && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-montserrat font-medium bg-surface-secondary/40 border border-border text-text-secondary">
+                    <Building2 className="w-3 h-3 text-brand" />
+                    {company.name}
+                  </span>
+                )}
                 <span className="text-[11px] font-montserrat text-text-tertiary flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-text-tertiary" />
                   В системе с {formatDate(profile?.createdAt || user?.created_at)}

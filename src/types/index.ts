@@ -56,6 +56,13 @@ export interface Activity {
 
 export type UserRole = "admin" | "partner" | "staff"
 
+export interface Company {
+  id: string
+  name: string
+  logoUrl?: string
+  defaultCurrency: string
+}
+
 export interface UserProfile {
   id: string
   email: string
@@ -64,6 +71,7 @@ export interface UserProfile {
   avatarUrl?: string
   phone?: string
   position?: string
+  companyId?: string
   createdAt?: string
 }
 

@@ -87,10 +87,11 @@ export default function Team() {
   const fetchProfiles = useCallback(async () => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false })
+      let queryBuilder = supabase.from("profiles").select("*")
+      if (currentProfile?.companyId && !currentProfile.companyId.startsWith("demo-")) {
+        queryBuilder = queryBuilder.eq("company_id", currentProfile.companyId)
+      }
+      const { data, error } = await queryBuilder.order("created_at", { ascending: false })
 
       if (!error && data && data.length > 0) {
         setProfiles(

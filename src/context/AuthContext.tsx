@@ -101,6 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         cached?.phone ||
         ""
 
+      const resolvedCompanyId =
+        (data && (data.company_id || data.companyId)) ||
+        meta.company_id ||
+        meta.companyId ||
+        cached?.companyId ||
+        undefined
+
       const userProfile: UserProfile = {
         id: userId,
         email,
@@ -109,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatarUrl: resolvedAvatar,
         phone: resolvedPhone,
         position: resolvedPosition,
+        companyId: resolvedCompanyId,
         createdAt: data?.created_at || cached?.createdAt || authData?.user?.created_at,
       }
 
@@ -399,6 +407,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: `${selectedRole}@brilliant-bar.ru`,
       role: selectedRole,
       name: roleLabels[selectedRole],
+      companyId: "demo-company-id",
       createdAt: new Date().toISOString(),
     }
 
