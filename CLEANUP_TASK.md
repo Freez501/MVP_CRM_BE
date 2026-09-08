@@ -1,121 +1,46 @@
-# 🧹 ТЗ: Дочистка техдолга
+# 🧹 Задача: Полный перенос базы в облако (Supabase) и зачистка Frontend-кэша
 
-> Основной рефакторинг завершён. Осталось 4 задачи по дочистке. Соблюдай правила из AGENTS.md.
+## 📌 Контекст
+Наш MVP перерос детские штанишки! Сейчас часть данных (базовые коктейли, инвайты) всё ещё жестко зашита в JSON-файлы фронтенда (`cocktails_db.json`) или хранится в `localStorage` браузера (`brilliant-custom-cocktails`, `brilliant_invites` и т.д.).
+Это приводит к тому, что новые зарегистрированные компании видят старые данные админа, потому что браузер подтягивает их из памяти.
 
----
+Наша цель: **100% данных должно храниться ТОЛЬКО в базе данных (Supabase). Никаких хардкодов и кэшей браузера для бизнес-данных.**
+При этом мы должны написать скрипт миграции, чтобы Владелец не потерял свои наработки.
 
-## ЗАДАЧА 1: Заменить Date.now() в модальных окнах
+## 🛠 Задачи для агента (IDE)
 
-В контекстах уже используется `crypto.randomUUID()`, но в модалках осталось 16 мест с `Date.now()`. Заменить на `crypto.randomUUID()`.
+### Шаг 1: Создание кнопки Миграции данных в Облако
+Прежде чем удалять кэш, мы должны перенести всё в Supabase.
+1. Создай компонент `src/components/CloudMigration.tsx`.
+2. В нем реализуй кнопку "Перенести базу в облако".
+3. Логика при нажатии:
+   - Прочитать `data/cocktails_db.json` (baseDb) и объединить с данными из `localStorage` (ключи `brilliant-custom-cocktails`, `brilliant-custom-semi-products`, `brilliant-custom-prices`, `brilliant-custom-categories-map`).
+   - Использовать `useAuth().profile?.companyId` для привязки к компании.
+   - Сформировать массивы объектов для таблиц: `cocktails`, `semi_products`, `ingredients`, `categories`. В `cocktails` обязательно передавать поле `key` (строковый идентификатор, например "aperol_spritz").
+   - Выполнить пакетный `upsert` (или `insert`) в соответствующие таблицы Supabase (в таблицы `cocktails`, `semi_products`, `ingredients`, `categories`).
+   - Вывести уведомление "Успешно перенесено!".
+4. Добавь этот компонент временно на страницу `Settings.tsx` в самый низ вкладки "Компания", чтобы Владелец мог один раз нажать на неё.
 
-### Затронутые файлы:
-- `src/components/database/CocktailAddModal.tsx` (6 мест)
-- `src/components/database/CocktailEditModal.tsx` (7 мест)
-- `src/components/database/SemiProductAddModal.tsx` (2 места)
-- `src/components/database/SemiProductEditModal.tsx` (2 места)
+### Шаг 2: Зачистка логики в Контекстах (The Big Cleanup)
+**После того как мигратор будет готов, безжалостно рефакторим контексты:**
+1. Файлы для правок: `CocktailsContext.tsx`, `IngredientsContext.tsx`, `SemiProductsContext.tsx`, `CategoriesContext.tsx`.
+2. **Удали** импорт `import db from "@/data/cocktails_db.json"`. База больше не поставляется вместе с кодом!
+3. **Удали** использование хука `useLocalStorage` для бизнес-данных.
+4. Переведи стейты на обычный `useState` (по умолчанию пустые объекты `{}` или массивы `[]`).
+5. В функциях получения данных (`useEffect` или `fetch...` из Supabase) **УБЕРИ** условие `data.length > 0`. 
+   - Если Supabase вернул 0 строк (`data = []`), стейт **обязательно** должен обновиться и стать пустым (`setCocktails({})`). Никаких фоллбэков к замороженному состоянию!
+6. Все функции создания, изменения и удаления (`addCocktail`, `updateCocktail` и т.д.) должны делать запросы **напрямую в Supabase** (через `supabase.from(...).insert/update/delete`) и только после успеха обновлять стейт React. Никаких записей в `localStorage`.
 
-### Что делать:
-Найти все строки вида:
-```typescript
-id: `rec_init_${idx}_${Date.now()}`
-id: `rec_${Date.now()}_${Math.random()}`
-```
-И заменить на:
-```typescript
-id: crypto.randomUUID()
-```
+### Шаг 3: Перенос Инвайтов в БД
+1. В файле `src/pages/Team.tsx` удали чтение инвайтов из `localStorage` (`INVITES_STORAGE_KEY`).
+2. Функция `loadInvites` теперь должна делать запрос: `supabase.from("invites").select("*")`.
+3. Функция отправки инвайта должна делать `insert` в Supabase.
 
-### Проверка: `npx tsc --noEmit` — ноль ошибок.
+### Шаг 4: Полное очищение при Logout
+1. Открой `src/context/AuthContext.tsx`.
+2. Найди функцию `signOut` (или логику выхода).
+3. Добавь туда вызов `localStorage.clear()` перед `supabase.auth.signOut()`. Это гарантирует, что если за один компьютер сядет другой человек, он получит абсолютно чистый браузер.
 
----
-
-## ЗАДАЧА 2: Исправить ESLint warnings
-
-Сейчас `npm run lint` выдаёт **37 warnings**, в основном `@typescript-eslint/no-explicit-any`.
-
-### Что делать:
-1. Запустить `npm run lint` и посмотреть все warnings.
-2. Для каждого `any` — заменить на правильный тип:
-   - Если это event handler → `React.ChangeEvent<HTMLInputElement>`, `React.FormEvent` и т.д.
-   - Если это catch-блок → `unknown` и потом `if (err instanceof Error)`
-   - Если это пропс из библиотеки — найти правильный тип из типов библиотеки.
-3. НЕ использовать `eslint-disable` комментарии — исправить по-настоящему.
-4. Запустить `npm run lint` — 0 errors, 0 warnings.
-
----
-
-## ЗАДАЧА 3: Lazy loading для страниц (code-splitting)
-
-При `npm run build` Vite предупреждает что бандл > 500 КБ. Нужно разбить на чанки с помощью `React.lazy`.
-
-### Что делать:
-
-В `src/App.tsx` заменить статические импорты страниц на lazy:
-
-```tsx
-import { lazy, Suspense } from "react"
-
-const Dashboard = lazy(() => import("./pages/Dashboard"))
-const Events = lazy(() => import("./pages/Events"))
-const Clients = lazy(() => import("./pages/Clients"))
-const Calculator = lazy(() => import("./pages/Calculator"))
-const Database = lazy(() => import("./pages/Database"))
-const Settings = lazy(() => import("./pages/Settings"))
-```
-
-Обернуть `<Routes>` в `<Suspense>`:
-```tsx
-<Suspense fallback={
-  <div className="flex items-center justify-center h-64">
-    <p className="text-text-tertiary font-montserrat">Загрузка...</p>
-  </div>
-}>
-  <Routes>
-    ...
-  </Routes>
-</Suspense>
-```
-
-### Проверка:
-- `npm run build` — чанки < 500 КБ, warning пропал
-- В браузере — переход между страницами работает без ошибок
-
----
-
-## ЗАДАЧА 4: Разбить PrintableSmeta.tsx (45 КБ)
-
-`src/components/calculator/PrintableSmeta.tsx` — 45 КБ, это слишком много для одного компонента.
-
-### Что делать:
-Разбить на подкомпоненты внутри `src/components/calculator/print/`:
-
-```
-src/components/calculator/print/
-├── PrintableSmeta.tsx       — основной контейнер (~50 строк)
-├── PrintHeader.tsx          — шапка документа (название, дата, логотип)
-├── PrintMenuSection.tsx     — секция "Меню коктейлей"
-├── PrintIngredientsTable.tsx — таблица ингредиентов по категориям
-├── PrintSemiProducts.tsx    — секция полуфабрикатов
-├── PrintGlassware.tsx       — секция посуды
-├── PrintTotals.tsx          — итоги и суммы
-└── printStyles.ts           — общие стили для печати (если есть inline-стили)
-```
-
-Каждый подкомпонент:
-- Принимает данные через props
-- Отвечает за свою секцию PDF/печати
-- Должен сохранять ТОЧНО такой же визуал как сейчас
-
-### Проверка:
-- Сгенерировать PDF — результат должен быть идентичен текущему
-- Распечатать (Ctrl+P) — результат идентичен
-
----
-
-## Финальная проверка
-
-После всех 4 задач:
-- [ ] `npm run lint` — 0 errors, 0 warnings
-- [ ] `npm run test:run` — все тесты зелёные
-- [ ] `npm run build` — нет warning про размер чанков
-- [ ] В браузере всё работает: калькулятор, база, PDF, печать
+## 🎨 Важно
+Обязательно проверяй ошибки (RLS) в ответах Supabase и выводи их в консоль.
+Весь код должен использовать TypeScript типы из `types/index.ts` и `types/db.ts`.
