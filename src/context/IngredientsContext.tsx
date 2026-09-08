@@ -61,7 +61,7 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
       .from("ingredients")
       .select("*")
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const pricesMap: Record<string, number> = {}
           const catMap: Record<string, string> = {}
           const infoMap: Record<string, { display_name?: string; unit?: string }> = {}

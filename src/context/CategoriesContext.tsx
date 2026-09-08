@@ -35,7 +35,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       .from("categories")
       .select("*")
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const map: Record<string, string> = {}
           for (const row of data as { key: string; name: string }[]) {
             map[row.key] = row.name

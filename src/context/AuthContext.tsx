@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { UserProfile, UserRole } from "@/types"
+import { clearAllLocalCaches } from "@/lib/cache"
 
 interface AuthContextType {
   user: User | null
@@ -379,6 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     localStorage.removeItem(DEMO_USER_KEY)
+    clearAllLocalCaches()
     try {
       await supabase.auth.signOut()
     } catch {

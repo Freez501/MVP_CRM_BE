@@ -47,7 +47,7 @@ export function ActivitiesProvider({ children }: { children: ReactNode }) {
         .order("timestamp", { ascending: false })
         .limit(50)
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const mapped = (data as DbActivityRow[]).map((r) => ({
           id: r.id,
           type: r.type as Activity["type"],

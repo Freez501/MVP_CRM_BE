@@ -53,7 +53,7 @@ export function SemiProductsProvider({ children }: { children: ReactNode }) {
       .from("semi_products")
       .select("*")
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const map: Record<string, SemiProduct> = {}
           for (const row of data as DbSemiProductRow[]) {
             map[row.key] = {

@@ -1,8 +1,8 @@
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useEffect, useRef } from "react"
 import { Route, Routes } from "react-router-dom"
 import { PageWrapper } from "./components/layout/PageWrapper"
 import { ErrorBoundary } from "./components/ui/ErrorBoundary"
-import { AuthProvider } from "./context/AuthContext"
+import { AuthProvider, useAuth } from "./context/AuthContext"
 import { ProtectedRoute } from "./components/auth/ProtectedRoute"
 import { ActivitiesProvider } from "./context/ActivitiesContext"
 import { CategoriesProvider } from "./context/CategoriesContext"
@@ -11,8 +11,8 @@ import { SemiProductsProvider } from "./context/SemiProductsContext"
 import { CocktailsProvider } from "./context/CocktailsContext"
 import { ClientsProvider } from "./context/ClientsContext"
 import { EventsProvider } from "./context/EventsContext"
-
 import { CompanyProvider } from "./context/CompanyContext"
+import { clearAllLocalCaches } from "./lib/cache"
 
 const Dashboard = lazy(() => import("./pages/Dashboard"))
 const Events = lazy(() => import("./pages/Events"))
@@ -25,9 +25,24 @@ const Profile = lazy(() => import("./pages/Profile"))
 const Login = lazy(() => import("./pages/Login"))
 const Paywall = lazy(() => import("./pages/Paywall"))
 
+function UserCacheWatcher() {
+  const { user } = useAuth()
+  const prevUserIdRef = useRef<string | undefined>(undefined)
+
+  useEffect(() => {
+    if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== user?.id) {
+      clearAllLocalCaches()
+    }
+    prevUserIdRef.current = user?.id
+  }, [user?.id])
+
+  return null
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      <UserCacheWatcher />
       <CompanyProvider>
         <ActivitiesProvider>
           <CategoriesProvider>

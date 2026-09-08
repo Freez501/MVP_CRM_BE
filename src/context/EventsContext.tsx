@@ -87,7 +87,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         .select("*")
         .order("created_at", { ascending: false })
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const mapped = (data as DbEventRow[]).map(mapFromDb)
         setEvents(mapped)
         saveCache(mapped)

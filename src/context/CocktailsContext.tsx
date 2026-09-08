@@ -57,7 +57,7 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
       .from("cocktails")
       .select("*")
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const map: Record<string, Cocktail> = {}
           const starred: string[] = []
           for (const row of data as DbCocktailRow[]) {
@@ -71,9 +71,7 @@ export function CocktailsProvider({ children }: { children: ReactNode }) {
             if (row.is_starred) starred.push(row.key)
           }
           setCloudCocktails(map)
-          if (starred.length > 0) {
-            setStarredKeys((prev) => Array.from(new Set([...prev, ...starred])))
-          }
+          setStarredKeys(Array.from(new Set(starred)))
         }
       })
 
