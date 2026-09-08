@@ -5,10 +5,11 @@ import {
   CalendarDays,
   MapPin,
   Users,
-  Printer,
+  FileDown,
   Calculator,
   Trash2,
   GripVertical,
+  Phone,
 } from "lucide-react"
 
 const stageVariant: Record<Event["stage"], "new" | "active" | "qualified" | "won" | "lost"> = {
@@ -95,9 +96,9 @@ export function EventCard({
                 onPrint()
               }}
               className="p-1 rounded text-text-tertiary hover:text-brand hover:bg-surface-secondary/40 transition-colors"
-              title="Печать сметы / ТТК"
+              title="Смета и бриф (PDF / Telegram)"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <FileDown className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -127,6 +128,14 @@ export function EventCard({
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{event.address}</span>
+            </div>
+          )}
+          {event.details?.managerContact && (
+            <div className="flex items-center gap-1.5" title="Менеджер на площадке">
+              <Phone className="w-3 h-3 shrink-0 text-brand" />
+              <span className="truncate text-text-secondary">
+                {event.details.managerContact}
+              </span>
             </div>
           )}
           <div className="flex items-center gap-1.5">

@@ -330,6 +330,7 @@ export default function Events() {
         onSubmit={handleFormSubmit}
         event={editingEvent}
         initialDate={formInitialDate}
+        onExport={setReportEvent}
       />
 
       {/* Модальное окно отчёта / печати */}

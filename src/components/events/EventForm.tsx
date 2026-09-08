@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"
 import { useClients } from "@/context/ClientsContext"
 import { useCocktails } from "@/context/CocktailsContext"
 import { Event, EventStage, EventDetails } from "@/types"
-import { X, Plus, Minus, Search, ChevronDown, Check, User } from "lucide-react"
+import { BAR_OPTIONS, SHELF_OPTIONS, PYRAMID_OPTIONS } from "@/constants/eventOptions"
+import { X, Plus, Minus, Search, ChevronDown, Check, User, FileDown } from "lucide-react"
 
 const DECORATION_OPTIONS = [
   "Базовые",
@@ -23,6 +24,7 @@ interface EventFormProps {
   onSubmit: (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">, existingId?: string) => void
   event?: Event | null
   initialDate?: string
+  onExport?: (event: Event) => void
 }
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -61,7 +63,14 @@ const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
   />
 )
 
-export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: EventFormProps) {
+export function EventForm({
+  isOpen,
+  onClose,
+  onSubmit,
+  event,
+  initialDate,
+  onExport,
+}: EventFormProps) {
   const { clients } = useClients()
   const { cocktails } = useCocktails()
 
@@ -79,6 +88,7 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
     clientId: "",
     date: "",
     address: "",
+    managerContact: "",
     stage: "new" as EventStage,
     value: 0,
     departure: "",
@@ -108,6 +118,7 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
         clientId: event.clientId || "",
         date: event.date || "",
         address: event.address || "",
+        managerContact: details.managerContact || "",
         stage: event.stage || "new",
         value: event.value || 0,
         departure: details.departure || "",
@@ -134,6 +145,7 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
         clientId: "",
         date: initialDate || "",
         address: "",
+        managerContact: "",
         stage: "new",
         value: 0,
         departure: "",
@@ -264,6 +276,7 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
       decorationComment: form.decorationComment || undefined,
       menu: form.menu,
       cocktails: form.cocktails.length > 0 ? form.cocktails : undefined,
+      managerContact: form.managerContact.trim() || undefined,
     }
 
     onSubmit(
@@ -486,14 +499,25 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
               />
             </div>
 
-            <div className="md:col-span-2">
-              <Label htmlFor="address">Адрес площадки</Label>
-              <Input
-                id="address"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                placeholder="г. Москва, ул. Примерная, 10"
-              />
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="address">Адрес площадки</Label>
+                <Input
+                  id="address"
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  placeholder="г. Москва, ул. Примерная, 10"
+                />
+              </div>
+              <div>
+                <Label htmlFor="managerContact">Контакт менеджера на площадке</Label>
+                <Input
+                  id="managerContact"
+                  value={form.managerContact}
+                  onChange={(e) => setForm({ ...form, managerContact: e.target.value })}
+                  placeholder="Имя, телефон / Telegram (напр. Анна +7 999 123-45-67)"
+                />
+              </div>
             </div>
           </div>
 
@@ -529,10 +553,11 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
                   value={form.bar}
                   onChange={(e) => setForm({ ...form, bar: e.target.value })}
                 >
-                  <option value="white_with_columns">Белый с колоннами</option>
-                  <option value="white_no_columns">Белый без колонн</option>
-                  <option value="black">Чёрный</option>
-                  <option value="none">Нет</option>
+                  {BAR_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
               <div>
@@ -552,9 +577,11 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
                   value={form.shelf}
                   onChange={(e) => setForm({ ...form, shelf: e.target.value })}
                 >
-                  <option value="black_white">Чёрный с белыми полками</option>
-                  <option value="gold_black">Золотой с чёрными полками</option>
-                  <option value="none">Нет</option>
+                  {SHELF_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
               <div>
@@ -574,10 +601,11 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
                   value={form.pyramid}
                   onChange={(e) => setForm({ ...form, pyramid: e.target.value })}
                 >
-                  <option value="">Нет</option>
-                  <option value="56">56 бокалов</option>
-                  <option value="84">84 бокала</option>
-                  <option value="120">120 бокалов</option>
+                  {PYRAMID_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
               <div>
@@ -706,13 +734,29 @@ export function EventForm({ isOpen, onClose, onSubmit, event, initialDate }: Eve
             placeholder="Особые пожелания заказчика, логистика, нюансы площадки..."
           />
 
-          <div className="sticky bottom-0 bg-bg-card border-t border-border pt-4 mt-8 flex justify-end gap-3 z-20">
-            <Button variant="secondary" type="button" onClick={onClose}>
-              Отмена
-            </Button>
-            <Button variant="primary" type="submit">
-              {isEdit ? "Сохранить изменения" : "Создать мероприятие"}
-            </Button>
+          <div className="sticky bottom-0 bg-bg-card border-t border-border pt-4 mt-8 flex items-center justify-between gap-3 z-20">
+            {isEdit && event && onExport ? (
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => onExport(event)}
+                className="flex items-center gap-2 text-xs text-brand border-brand/30 hover:bg-brand/10"
+                title="Экспорт в PDF или копирование для Telegram"
+              >
+                <FileDown className="w-3.5 h-3.5" />
+                <span>Бриф (PDF / Telegram)</span>
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-3">
+              <Button variant="secondary" type="button" onClick={onClose}>
+                Отмена
+              </Button>
+              <Button variant="primary" type="submit">
+                {isEdit ? "Сохранить изменения" : "Создать мероприятие"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

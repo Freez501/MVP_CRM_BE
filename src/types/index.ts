@@ -16,6 +16,7 @@ export interface EventDetails {
   decorationComment?: string
   menu?: "us" | "client"
   cocktails?: { name: string; qty: number; key?: string }[]
+  managerContact?: string
 }
 
 export interface Event {
