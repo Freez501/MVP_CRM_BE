@@ -1,22 +1,20 @@
 import { createContext, useContext, ReactNode, useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import { mockEvents } from "@/data/mockData"
 import { Event, EventDetails, EventStage } from "@/types"
 import { useActivities } from "./ActivitiesContext"
+import { useAuth } from "./AuthContext"
 import { CURRENT_USER } from "@/constants"
 
 interface EventsContextType {
   events: Event[]
   isLoading: boolean
-  addEvent: (event: Omit<Event, "id" | "createdAt" | "updatedAt">) => Event
-  updateEvent: (id: string, updates: Partial<Event>) => void
-  removeEvent: (id: string) => void
+  addEvent: (event: Omit<Event, "id" | "createdAt" | "updatedAt">) => Promise<Event | null>
+  updateEvent: (id: string, updates: Partial<Event>) => Promise<boolean>
+  removeEvent: (id: string) => Promise<boolean>
   refreshEvents: () => Promise<void>
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined)
-
-const EVENTS_CACHE_KEY = "brilliant-events"
 
 interface DbEventRow {
   id: string
@@ -61,47 +59,39 @@ const STAGE_LABELS: Record<string, string> = {
 }
 
 export function EventsProvider({ children }: { children: ReactNode }) {
-  const [events, setEvents] = useState<Event[]>(() => {
-    try {
-      const cached = localStorage.getItem(EVENTS_CACHE_KEY)
-      return cached ? JSON.parse(cached) : mockEvents
-    } catch {
-      return mockEvents
-    }
-  })
+  const { user, profile } = useAuth()
+  const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const { addActivity } = useActivities()
 
-  const saveCache = (newEvents: Event[]) => {
-    try {
-      localStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(newEvents))
-    } catch {
-      // ignore storage quota errors
-    }
-  }
-
   const fetchEvents = useCallback(async () => {
+    setIsLoading(true)
     try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("created_at", { ascending: false })
+      let query = supabase.from("events").select("*")
+      if (profile?.companyId && !profile.companyId.startsWith("demo-")) {
+        query = query.eq("company_id", profile.companyId)
+      }
+      const { data, error } = await query.order("created_at", { ascending: false })
 
-      if (!error && data) {
+      if (error) {
+        console.error("Supabase events fetch error:", error.message)
+      } else if (data) {
         const mapped = (data as DbEventRow[]).map(mapFromDb)
         setEvents(mapped)
-        saveCache(mapped)
       }
     } catch (err) {
-      console.warn("Events fetch from Supabase fallback:", err)
+      console.error("Events fetch fallback error:", err)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [profile?.companyId])
 
   useEffect(() => {
+    setEvents([])
     fetchEvents()
+  }, [user?.id, fetchEvents])
 
+  useEffect(() => {
     // Realtime subscription
     const channel = supabase
       .channel("realtime-events")
@@ -110,24 +100,14 @@ export function EventsProvider({ children }: { children: ReactNode }) {
           const newEvent = mapFromDb(payload.new as DbEventRow)
           setEvents((prev) => {
             if (prev.some((e) => e.id === newEvent.id)) return prev
-            const next = [newEvent, ...prev]
-            saveCache(next)
-            return next
+            return [newEvent, ...prev]
           })
         } else if (payload.eventType === "UPDATE") {
           const updated = mapFromDb(payload.new as DbEventRow)
-          setEvents((prev) => {
-            const next = prev.map((e) => (e.id === updated.id ? updated : e))
-            saveCache(next)
-            return next
-          })
+          setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
         } else if (payload.eventType === "DELETE") {
           const deletedId = (payload.old as { id: string }).id
-          setEvents((prev) => {
-            const next = prev.filter((e) => e.id !== deletedId)
-            saveCache(next)
-            return next
-          })
+          setEvents((prev) => prev.filter((e) => e.id !== deletedId))
         }
       })
       .subscribe()
@@ -138,32 +118,19 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   }, [fetchEvents])
 
   const addEvent = useCallback(
-    (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">): Event => {
+    async (eventData: Omit<Event, "id" | "createdAt" | "updatedAt">): Promise<Event | null> => {
       const now = new Date().toISOString()
+      const newId = crypto.randomUUID()
       const newEvent: Event = {
         ...eventData,
-        id: crypto.randomUUID(),
+        id: newId,
         createdAt: now,
         updatedAt: now,
       }
 
-      setEvents((prev) => {
-        const next = [newEvent, ...prev]
-        saveCache(next)
-        return next
-      })
-
-      addActivity({
-        type: "event_created",
-        description: `Создано мероприятие «${newEvent.title}»`,
-        user: CURRENT_USER,
-      })
-
-      // Sync to Supabase
-      supabase
-        .from("events")
-        .insert({
-          id: newEvent.id,
+      try {
+        const { error } = await supabase.from("events").insert({
+          id: newId,
           title: newEvent.title,
           client_id: newEvent.clientId || null,
           client_name: newEvent.clientName,
@@ -174,37 +141,46 @@ export function EventsProvider({ children }: { children: ReactNode }) {
           value: newEvent.value || 0,
           comment: newEvent.comment || "",
           details: newEvent.details || {},
-          created_at: newEvent.createdAt,
-          updated_at: newEvent.updatedAt,
-        })
-        .then(({ error }) => {
-          if (error) console.warn("Supabase event insert warning:", error.message)
+          created_at: now,
+          updated_at: now,
+          created_by: user?.id || null,
+          company_id: profile?.companyId || null,
         })
 
-      return newEvent
+        if (error) {
+          console.error("Supabase event insert error:", error.message)
+          return null
+        }
+
+        addActivity({
+          type: "event_created",
+          description: `Создано мероприятие «${newEvent.title}»`,
+          user: CURRENT_USER,
+        })
+
+        await fetchEvents()
+        return newEvent
+      } catch (err) {
+        console.error("Failed to add event:", err)
+        return null
+      }
     },
-    [addActivity]
+    [profile?.companyId, user?.id, addActivity, fetchEvents]
   )
 
   const updateEvent = useCallback(
-    (id: string, updates: Partial<Event>) => {
+    async (id: string, updates: Partial<Event>): Promise<boolean> => {
       const now = new Date().toISOString()
-      setEvents((prev) => {
-        const target = prev.find((e) => e.id === id)
-        if (target && updates.stage && updates.stage !== target.stage) {
-          const stageName = STAGE_LABELS[updates.stage] || updates.stage
-          addActivity({
-            type: "event_moved",
-            description: `«${target.title}» → ${stageName}`,
-            user: CURRENT_USER,
-          })
-        }
-        const next = prev.map((e) => (e.id === id ? { ...e, ...updates, updatedAt: now } : e))
-        saveCache(next)
-        return next
-      })
+      const target = events.find((e) => e.id === id)
+      if (target && updates.stage && updates.stage !== target.stage) {
+        const stageName = STAGE_LABELS[updates.stage] || updates.stage
+        addActivity({
+          type: "event_moved",
+          description: `«${target.title}» → ${stageName}`,
+          user: CURRENT_USER,
+        })
+      }
 
-      // Sync to Supabase
       const dbPayload: Record<string, unknown> = {
         updated_at: now,
       }
@@ -213,51 +189,54 @@ export function EventsProvider({ children }: { children: ReactNode }) {
       if (updates.clientName !== undefined) dbPayload.client_name = updates.clientName
       if (updates.date !== undefined) dbPayload.date = updates.date
       if (updates.address !== undefined) dbPayload.address = updates.address
-      if (updates.bartendersCount !== undefined)
-        dbPayload.bartenders_count = updates.bartendersCount
+      if (updates.bartendersCount !== undefined) dbPayload.bartenders_count = updates.bartendersCount
       if (updates.stage !== undefined) dbPayload.stage = updates.stage
       if (updates.value !== undefined) dbPayload.value = updates.value
       if (updates.comment !== undefined) dbPayload.comment = updates.comment
       if (updates.details !== undefined) dbPayload.details = updates.details
 
-      supabase
-        .from("events")
-        .update(dbPayload)
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.warn("Supabase event update warning:", error.message)
-        })
+      try {
+        const { error } = await supabase.from("events").update(dbPayload).eq("id", id)
+        if (error) {
+          console.error("Supabase event update error:", error.message)
+          return false
+        }
+        await fetchEvents()
+        return true
+      } catch (err) {
+        console.error("Failed to update event:", err)
+        return false
+      }
     },
-    [addActivity]
+    [events, addActivity, fetchEvents]
   )
 
   const removeEvent = useCallback(
-    (id: string) => {
+    async (id: string): Promise<boolean> => {
       const target = events.find((e) => e.id === id)
-      setEvents((prev) => {
-        const next = prev.filter((e) => e.id !== id)
-        saveCache(next)
-        return next
-      })
+      try {
+        const { error } = await supabase.from("events").delete().eq("id", id)
+        if (error) {
+          console.error("Supabase event delete error:", error.message)
+          return false
+        }
 
-      if (target) {
-        addActivity({
-          type: "note_added",
-          description: `Удалено мероприятие «${target.title}»`,
-          user: CURRENT_USER,
-        })
+        if (target) {
+          addActivity({
+            type: "note_added",
+            description: `Удалено мероприятие «${target.title}»`,
+            user: CURRENT_USER,
+          })
+        }
+
+        await fetchEvents()
+        return true
+      } catch (err) {
+        console.error("Failed to delete event:", err)
+        return false
       }
-
-      // Sync to Supabase
-      supabase
-        .from("events")
-        .delete()
-        .eq("id", id)
-        .then(({ error }) => {
-          if (error) console.warn("Supabase event delete warning:", error.message)
-        })
     },
-    [events, addActivity]
+    [events, addActivity, fetchEvents]
   )
 
   return (
@@ -276,6 +255,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEvents() {
   const context = useContext(EventsContext)
   if (!context) {

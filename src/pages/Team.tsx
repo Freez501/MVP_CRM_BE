@@ -38,8 +38,6 @@ interface ProfileItem {
   created_at?: string
 }
 
-const INVITES_STORAGE_KEY = "brilliant-team-invites"
-
 export default function Team() {
   const { user, profile: currentProfile } = useAuth()
   const [profiles, setProfiles] = useState<ProfileItem[]>([])
@@ -67,22 +65,35 @@ export default function Team() {
   const [hasCopied, setHasCopied] = useState(false)
   const [isSendingInvite, setIsSendingInvite] = useState(false)
 
-  // Загрузка сохранённых инвайтов
-  const loadInvites = useCallback(() => {
+  // Загрузка сохранённых инвайтов из Supabase
+  const loadInvites = useCallback(async () => {
     try {
-      const stored = localStorage.getItem(INVITES_STORAGE_KEY)
-      if (stored) {
-        setInvites(JSON.parse(stored))
+      let queryBuilder = supabase.from("invites").select("*")
+      if (currentProfile?.companyId && !currentProfile.companyId.startsWith("demo-")) {
+        queryBuilder = queryBuilder.eq("company_id", currentProfile.companyId)
       }
-    } catch {
-      // ignore
+      const { data, error } = await queryBuilder.order("created_at", { ascending: false })
+      if (!error && data) {
+        setInvites(
+          data.map((row) => ({
+            id: row.id,
+            email: row.email,
+            role: (row.role as UserRole) || "staff",
+            name: row.name || undefined,
+            position: row.position || undefined,
+            token: row.token,
+            status: row.status as "pending" | "accepted" | "revoked",
+            createdAt: row.created_at,
+            expiresAt: row.expires_at || undefined,
+          }))
+        )
+      } else if (error) {
+        console.warn("Load invites notice:", error.message)
+      }
+    } catch (err) {
+      console.warn("Load invites fallback:", err)
     }
-  }, [])
-
-  const saveInvites = (newInvites: TeamInvite[]) => {
-    setInvites(newInvites)
-    localStorage.setItem(INVITES_STORAGE_KEY, JSON.stringify(newInvites))
-  }
+  }, [currentProfile?.companyId])
 
   const fetchProfiles = useCallback(async () => {
     setIsLoading(true)
@@ -235,22 +246,26 @@ export default function Team() {
         status: "pending",
       }
 
-      // Попытка записать в Supabase invites, если таблица существует
+      // Запись в Supabase invites
       try {
-        await supabase.from("invites").insert({
+        const { error: insertError } = await supabase.from("invites").insert({
           id: newInvite.id,
           email: newInvite.email,
-          name: newInvite.name,
+          name: newInvite.name || null,
+          position: newInvite.position || null,
           role: newInvite.role,
           token: newInvite.token,
           created_at: newInvite.createdAt,
           status: "pending",
         })
-      } catch {
-        // ignore
+        if (insertError) {
+          console.warn("Supabase invite insert notice:", insertError.message)
+        }
+      } catch (err) {
+        console.warn("Invite insert error:", err)
       }
 
-      saveInvites([newInvite, ...invites.filter((i) => i.email !== newInvite.email)])
+      setInvites((prev) => [newInvite, ...prev.filter((i) => i.email !== newInvite.email)])
       setGeneratedInviteLink(link)
 
       // Копирование в буфер обмена
@@ -274,8 +289,16 @@ export default function Team() {
     }
   }
 
-  const handleRevokeInvite = (inviteId: string) => {
-    saveInvites(invites.filter((inv) => inv.id !== inviteId))
+  const handleRevokeInvite = async (inviteId: string) => {
+    setInvites((prev) => prev.filter((inv) => inv.id !== inviteId))
+    try {
+      const { error } = await supabase.from("invites").delete().eq("id", inviteId)
+      if (error) {
+        console.warn("Supabase invite delete notice:", error.message)
+      }
+    } catch (err) {
+      console.warn("Invite delete error:", err)
+    }
   }
 
   const roleStats = useMemo(() => {

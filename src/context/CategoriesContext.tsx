@@ -1,13 +1,7 @@
-import { createContext, useContext, ReactNode, useMemo, useCallback, useEffect } from "react"
-import { useLocalStorage } from "@/hooks/useLocalStorage"
-import db from "@/data/cocktails_db.json"
-import { CocktailsDb } from "@/types/db"
+import { createContext, useContext, ReactNode, useCallback, useEffect, useState } from "react"
 import { useActivities } from "./ActivitiesContext"
-import { saveFullDbToDisk } from "./DatabaseSyncService"
 import { CURRENT_USER } from "@/constants"
 import { supabase } from "@/lib/supabase"
-
-const baseDb = db as CocktailsDb
 
 interface CategoriesContextType {
   categoryNames: Record<string, string>
@@ -18,15 +12,7 @@ interface CategoriesContextType {
 const CategoriesContext = createContext<CategoriesContextType | undefined>(undefined)
 
 export function CategoriesProvider({ children }: { children: ReactNode }) {
-  const [customCategoryNames, setCustomCategoryNames] = useLocalStorage<Record<string, string>>(
-    "brilliant-custom-category-names",
-    {}
-  )
-  const [deletedCategoryKeys, setDeletedCategoryKeys] = useLocalStorage<string[]>(
-    "brilliant-deleted-categories",
-    []
-  )
-
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({})
   const { addActivity } = useActivities()
 
   // Load from Supabase on mount
@@ -40,54 +26,71 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
           for (const row of data as { key: string; name: string }[]) {
             map[row.key] = row.name
           }
-          setCustomCategoryNames((prev) => ({ ...prev, ...map }))
+          setCategoryNames(map)
+        } else if (error) {
+          console.warn("Supabase categories fetch error:", error.message)
         }
       })
-  }, [setCustomCategoryNames])
 
-  const categoryNames = useMemo(() => {
-    const merged = { ...baseDb.category_names, ...customCategoryNames }
-    deletedCategoryKeys.forEach((k) => delete merged[k])
-    return merged
-  }, [customCategoryNames, deletedCategoryKeys])
+    const channel = supabase
+      .channel("realtime-categories")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "categories" },
+        (payload) => {
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const row = payload.new as { key: string; name: string }
+            setCategoryNames((prev) => ({ ...prev, [row.key]: row.name }))
+          } else if (payload.eventType === "DELETE") {
+            const row = payload.old as { key: string }
+            setCategoryNames((prev) => {
+              const copy = { ...prev }
+              delete copy[row.key]
+              return copy
+            })
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   const addCategory = useCallback(
-    (key: string, displayName: string) => {
+    async (key: string, displayName: string) => {
       const cleanKey = key.trim().toLowerCase()
-      setCustomCategoryNames((prev) => ({ ...prev, [cleanKey]: displayName.trim() }))
-      setDeletedCategoryKeys((prev) => prev.filter((k) => k !== cleanKey))
-      saveFullDbToDisk({
-        category_names: { ...categoryNames, [cleanKey]: displayName.trim() },
-      })
+      setCategoryNames((prev) => ({ ...prev, [cleanKey]: displayName.trim() }))
+
       addActivity({
         type: "note_added",
         description: `Добавлена категория «${displayName}»`,
         user: CURRENT_USER,
       })
 
-      // Sync to Supabase
-      supabase
-        .from("categories")
-        .upsert({
-          key: cleanKey,
-          name: displayName.trim(),
-        })
-        .then(({ error }) => {
-          if (error) console.warn("Supabase category upsert warning:", error.message)
-        })
+      const { error } = await supabase.from("categories").upsert({
+        key: cleanKey,
+        name: displayName.trim(),
+      })
+
+      if (error) {
+        console.warn("Supabase category upsert warning:", error.message)
+      }
     },
-    [categoryNames, setCustomCategoryNames, setDeletedCategoryKeys, addActivity]
+    [addActivity]
   )
 
   const removeCategory = useCallback(
-    (key: string) => {
+    async (key: string) => {
       const cleanKey = key.trim().toLowerCase()
       const name = categoryNames[cleanKey] || cleanKey
-      setDeletedCategoryKeys((prev) => (prev.includes(cleanKey) ? prev : [...prev, cleanKey]))
 
-      const updatedNames = { ...categoryNames }
-      delete updatedNames[cleanKey]
-      saveFullDbToDisk({ category_names: updatedNames })
+      setCategoryNames((prev) => {
+        const copy = { ...prev }
+        delete copy[cleanKey]
+        return copy
+      })
 
       addActivity({
         type: "note_added",
@@ -95,16 +98,12 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         user: CURRENT_USER,
       })
 
-      // Sync to Supabase
-      supabase
-        .from("categories")
-        .delete()
-        .eq("key", cleanKey)
-        .then(({ error }) => {
-          if (error) console.warn("Supabase category delete warning:", error.message)
-        })
+      const { error } = await supabase.from("categories").delete().eq("key", cleanKey)
+      if (error) {
+        console.warn("Supabase category delete warning:", error.message)
+      }
     },
-    [categoryNames, setDeletedCategoryKeys, addActivity]
+    [categoryNames, addActivity]
   )
 
   return (
@@ -120,6 +119,7 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCategories() {
   const context = useContext(CategoriesContext)
   if (!context) {

@@ -7,6 +7,7 @@ interface DialogProps {
   title: string
   description?: string
   maxWidth?: "md" | "lg" | "xl" | "2xl"
+  zIndex?: string
   children: ReactNode
 }
 
@@ -16,6 +17,7 @@ export function Dialog({
   title,
   description,
   maxWidth = "xl",
+  zIndex = "z-50",
   children,
 }: DialogProps) {
   useEffect(() => {
@@ -44,7 +46,7 @@ export function Dialog({
   }[maxWidth]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+    <div className={`fixed inset-0 ${zIndex} flex items-center justify-center p-3 sm:p-4`}>
       <div
         className="fixed inset-0 bg-[#141414]/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}

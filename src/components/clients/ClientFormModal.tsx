@@ -8,9 +8,19 @@ interface ClientFormModalProps {
   open: boolean
   onClose: () => void
   client?: Client | null
+  zIndex?: string
+  initialName?: string
+  onSuccess?: (client: Client) => void
 }
 
-export function ClientFormModal({ open, onClose, client }: ClientFormModalProps) {
+export function ClientFormModal({
+  open,
+  onClose,
+  client,
+  zIndex,
+  initialName,
+  onSuccess,
+}: ClientFormModalProps) {
   const { addClient, updateClient } = useClients()
 
   const [name, setName] = useState("")
@@ -18,6 +28,7 @@ export function ClientFormModal({ open, onClose, client }: ClientFormModalProps)
   const [email, setEmail] = useState("")
   const [company, setCompany] = useState("")
   const [notes, setNotes] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (client) {
@@ -27,37 +38,54 @@ export function ClientFormModal({ open, onClose, client }: ClientFormModalProps)
       setCompany(client.company || "")
       setNotes(client.notes || "")
     } else {
-      setName("")
+      setName(initialName || "")
       setPhone("")
       setEmail("")
       setCompany("")
       setNotes("")
     }
-  }, [client, open])
+  }, [client, open, initialName])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim() || isSubmitting) return
 
-    if (client) {
-      updateClient(client.id, {
-        name: name.trim(),
-        phone: phone.trim() || undefined,
-        email: email.trim() || undefined,
-        company: company.trim() || undefined,
-        notes: notes.trim() || undefined,
-      })
-    } else {
-      addClient({
-        name: name.trim(),
-        phone: phone.trim() || undefined,
-        email: email.trim() || undefined,
-        company: company.trim() || undefined,
-        notes: notes.trim() || undefined,
-      })
+    setIsSubmitting(true)
+    try {
+      if (client) {
+        await updateClient(client.id, {
+          name: name.trim(),
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          company: company.trim() || undefined,
+          notes: notes.trim() || undefined,
+        })
+        if (onSuccess) {
+          onSuccess({
+            ...client,
+            name: name.trim(),
+            phone: phone.trim() || undefined,
+            email: email.trim() || undefined,
+            company: company.trim() || undefined,
+            notes: notes.trim() || undefined,
+          })
+        }
+      } else {
+        const created = await addClient({
+          name: name.trim(),
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          company: company.trim() || undefined,
+          notes: notes.trim() || undefined,
+        })
+        if (created && onSuccess) {
+          onSuccess(created)
+        }
+      }
+      onClose()
+    } finally {
+      setIsSubmitting(false)
     }
-
-    onClose()
   }
 
   const isEdit = !!client
@@ -66,6 +94,7 @@ export function ClientFormModal({ open, onClose, client }: ClientFormModalProps)
     <Dialog
       open={open}
       onClose={onClose}
+      zIndex={zIndex}
       title={isEdit ? "Редактировать заказчика" : "Новый заказчик"}
       description={
         isEdit
@@ -146,8 +175,8 @@ export function ClientFormModal({ open, onClose, client }: ClientFormModalProps)
           <Button type="button" variant="ghost" onClick={onClose}>
             Отмена
           </Button>
-          <Button type="submit" variant="primary">
-            {isEdit ? "Сохранить изменения" : "Создать заказчика"}
+          <Button type="submit" variant="primary" disabled={isSubmitting}>
+            {isSubmitting ? "Сохранение..." : isEdit ? "Сохранить изменения" : "Создать заказчика"}
           </Button>
         </div>
       </form>

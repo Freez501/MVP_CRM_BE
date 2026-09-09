@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { useClients } from "@/context/ClientsContext"
 import { useCocktails } from "@/context/CocktailsContext"
-import { Event, EventStage, EventDetails } from "@/types"
+import { Event, EventStage, EventDetails, Client } from "@/types"
 import { BAR_OPTIONS, SHELF_OPTIONS, PYRAMID_OPTIONS } from "@/constants/eventOptions"
-import { X, Plus, Minus, Search, ChevronDown, Check, User, FileDown } from "lucide-react"
+import { X, Plus, Minus, Search, ChevronDown, Check, User, UserPlus, FileDown } from "lucide-react"
+import { ClientFormModal } from "@/components/clients/ClientFormModal"
 
 const DECORATION_OPTIONS = [
   "Базовые",
@@ -82,6 +83,8 @@ export function EventForm({
   const [clientError, setClientError] = useState(false)
   const clientDropdownRef = useRef<HTMLDivElement>(null)
   const clientInputRef = useRef<HTMLInputElement>(null)
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+  const [recentlyAddedClient, setRecentlyAddedClient] = useState<Client | null>(null)
 
   const [form, setForm] = useState({
     title: "",
@@ -170,6 +173,8 @@ export function EventForm({
     setCocktailSearch("")
     setClientSearch("")
     setIsClientOpen(false)
+    setIsAddClientOpen(false)
+    setRecentlyAddedClient(null)
     setClientError(false)
   }, [event, isOpen, initialDate])
 
@@ -216,7 +221,9 @@ export function EventForm({
     )
   }, [clients, clientSearch])
 
-  const selectedClient = clients.find((c) => c.id === form.clientId)
+  const selectedClient =
+    clients.find((c) => c.id === form.clientId) ||
+    (recentlyAddedClient?.id === form.clientId ? recentlyAddedClient : null)
 
   if (!isOpen) return null
 
@@ -332,45 +339,60 @@ export function EventForm({
             {/* Интерактивный селектор заказчика с поиском */}
             <div className="relative" ref={clientDropdownRef}>
               <Label htmlFor="client-select">Заказчик *</Label>
-              <button
-                id="client-select"
-                type="button"
-                onClick={() => {
-                  setIsClientOpen(!isClientOpen)
-                  setClientSearch("")
-                  setClientError(false)
-                }}
-                className={`w-full flex items-center justify-between gap-2 bg-bg-card border-2 rounded px-4 py-2 font-montserrat text-sm text-left transition-all ${
-                  clientError
-                    ? "border-rose-500 focus:border-rose-500"
-                    : "border-border-sketch hover:border-brand/70 focus:border-brand"
-                }`}
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <User className="w-4 h-4 text-text-tertiary shrink-0" />
-                  {selectedClient ? (
-                    <span className="font-medium text-text-primary truncate">
-                      {selectedClient.name}
-                      {selectedClient.company ? (
-                        <span className="text-text-secondary text-xs ml-1.5 font-normal">
-                          ({selectedClient.company})
-                        </span>
-                      ) : null}
-                    </span>
-                  ) : (
-                    <span className="text-text-tertiary">Выберите заказчика *</span>
-                  )}
-                </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-text-tertiary shrink-0 transition-transform duration-200 ${
-                    isClientOpen ? "rotate-180" : ""
+
+              <div className="flex items-stretch gap-2">
+                <button
+                  id="client-select"
+                  type="button"
+                  onClick={() => {
+                    setIsClientOpen(!isClientOpen)
+                    setClientSearch("")
+                    setClientError(false)
+                  }}
+                  className={`flex-1 flex items-center justify-between gap-2 bg-bg-card border-2 rounded px-4 py-2 font-montserrat text-[15px] text-left transition-all ${
+                    clientError
+                      ? "border-rose-500 focus:border-rose-500"
+                      : "border-border-sketch hover:border-brand/70 focus:border-brand"
                   }`}
-                />
-              </button>
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <User className="w-4 h-4 text-text-tertiary shrink-0" />
+                    {selectedClient ? (
+                      <span className="font-medium text-text-primary truncate">
+                        {selectedClient.name}
+                        {selectedClient.company ? (
+                          <span className="text-text-secondary text-xs ml-1.5 font-normal">
+                            ({selectedClient.company})
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span className="text-text-tertiary">Выберите заказчика *</span>
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-text-tertiary shrink-0 transition-transform duration-200 ${
+                      isClientOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  title="Добавить нового заказчика"
+                  onClick={() => {
+                    setIsClientOpen(false)
+                    setIsAddClientOpen(true)
+                  }}
+                  className="shrink-0 flex items-center justify-center px-3.5 rounded border-2 border-border-sketch bg-bg-card hover:border-brand hover:bg-brand/10 text-text-secondary hover:text-brand transition-all shadow-sm group cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
 
               {clientError && (
                 <p className="text-[11px] text-rose-400 font-montserrat mt-1">
-                  Пожалуйста, выберите заказчика из базы
+                  Пожалуйста, выберите заказчика из базы или добавьте нового
                 </p>
               )}
 
@@ -391,42 +413,73 @@ export function EventForm({
 
                   <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
                     {filteredClients.length === 0 ? (
-                      <p className="text-xs font-montserrat text-text-tertiary py-3 text-center">
-                        Заказчик не найден
-                      </p>
+                      <div className="p-3 text-center">
+                        <p className="text-xs font-montserrat text-text-tertiary mb-2">
+                          {clientSearch.trim()
+                            ? `Заказчик «${clientSearch.trim()}» не найден`
+                            : "Заказчиков пока нет в базе"}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsClientOpen(false)
+                            setIsAddClientOpen(true)
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded font-montserrat text-xs hover:bg-brand-light transition-all shadow-sm cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Создать {clientSearch.trim() ? `«${clientSearch.trim()}»` : "заказчика"}</span>
+                        </button>
+                      </div>
                     ) : (
-                      filteredClients.map((c) => {
-                        const isSelected = c.id === form.clientId
-                        return (
+                      <>
+                        {filteredClients.map((c) => {
+                          const isSelected = c.id === form.clientId
+                          return (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => {
+                                setForm({ ...form, clientId: c.id })
+                                setIsClientOpen(false)
+                                setClientSearch("")
+                                setClientError(false)
+                              }}
+                              className={`w-full flex items-center justify-between p-2 rounded text-left font-montserrat text-xs transition-colors cursor-pointer ${
+                                isSelected
+                                  ? "bg-accent-primary text-text-primary font-semibold"
+                                  : "hover:bg-surface-secondary/40 text-text-secondary hover:text-text-primary"
+                              }`}
+                            >
+                              <div className="truncate">
+                                <div className="font-medium text-text-primary truncate">{c.name}</div>
+                                {(c.company || c.phone) && (
+                                  <div className="text-[11px] text-text-tertiary truncate">
+                                    {c.company} {c.company && c.phone ? "·" : ""} {c.phone}
+                                  </div>
+                                )}
+                              </div>
+                              {isSelected && (
+                                <Check className="w-4 h-4 text-text-primary shrink-0 ml-2" />
+                              )}
+                            </button>
+                          )
+                        })}
+
+                        <div className="pt-2 mt-1 border-t border-border">
                           <button
-                            key={c.id}
                             type="button"
                             onClick={() => {
-                              setForm({ ...form, clientId: c.id })
                               setIsClientOpen(false)
-                              setClientSearch("")
-                              setClientError(false)
+                              setIsAddClientOpen(true)
                             }}
-                            className={`w-full flex items-center justify-between p-2 rounded text-left font-montserrat text-xs transition-colors ${
-                              isSelected
-                                ? "bg-accent-primary text-text-primary font-semibold"
-                                : "hover:bg-surface-secondary/40 text-text-secondary hover:text-text-primary"
-                            }`}
+                            className="w-full flex items-center justify-center gap-1.5 p-2 rounded text-xs font-montserrat font-medium text-brand hover:bg-brand/10 transition-colors cursor-pointer"
                           >
-                            <div className="truncate">
-                              <div className="font-medium text-text-primary truncate">{c.name}</div>
-                              {(c.company || c.phone) && (
-                                <div className="text-[11px] text-text-tertiary truncate">
-                                  {c.company} {c.company && c.phone ? "·" : ""} {c.phone}
-                                </div>
-                              )}
-                            </div>
-                            {isSelected && (
-                              <Check className="w-4 h-4 text-text-primary shrink-0 ml-2" />
-                            )}
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Создать нового заказчика</span>
                           </button>
-                        )
-                      })
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -760,6 +813,23 @@ export function EventForm({
           </div>
         </form>
       </div>
+
+      <ClientFormModal
+        open={isAddClientOpen}
+        onClose={() => setIsAddClientOpen(false)}
+        zIndex="z-[70]"
+        initialName={clientSearch.trim()}
+        onSuccess={(newClient) => {
+          setRecentlyAddedClient(newClient)
+          setForm((prev) => ({
+            ...prev,
+            clientId: newClient.id,
+          }))
+          setIsClientOpen(false)
+          setClientSearch("")
+          setClientError(false)
+        }}
+      />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useCompany } from "@/context/CompanyContext"
 import { Button } from "@/components/ui/button"
+import { CloudMigration } from "@/components/CloudMigration"
 import {
   Building2,
   Coins,
@@ -235,6 +236,8 @@ export default function Settings() {
               )}
             </form>
           </div>
+
+          {isAdmin && <CloudMigration />}
         </div>
       )}
 
